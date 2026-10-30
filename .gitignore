@@ -1,0 +1,23 @@
+# Secrets — never commit these
+.env
+*.env
+
+# Shared/uploaded source files (manual uploads only)
+Shared by gustavo/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# XLSX outputs (generated locally, not needed in repo)
+data/*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

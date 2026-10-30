@@ -1,0 +1,1115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adspend Decision Dashboard</title>
+<style>
+:root{
+  --bg:#f5f6f9;--card:#fff;--ink:#18202e;--mute:#5d6878;--line:#e2e6ed;--head:#f0f2f6;--accent:#2f5bea;--sel:#eaf0ff;
+  --g-bg:#d9f3e3;--g-fg:#0f6537;
+  --a1-bg:#fdf1cd;--a1-fg:#80560a;
+  --a2-bg:#f9cf94;--a2-fg:#6e3200;
+  --r-bg:#fbdcdb;--r-fg:#9d1a1d;
+  --n-bg:#e7eaf0;--n-fg:#566173;
+  --b-bg:#dce8ff;--b-fg:#1c4aaf;
+  --stripe:#edf0f6;--sep:#000;
+  --shadow:0 1px 2px rgba(20,30,50,.06),0 2px 8px rgba(20,30,50,.04);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#10141b;--card:#181e28;--ink:#e6eaf2;--mute:#9aa5b6;--line:#2a3342;--head:#1e2531;--accent:#6e90ff;--sel:#222c42;
+    --g-bg:#14412a;--g-fg:#7de0a5;
+    --a1-bg:#463a12;--a1-fg:#f2d27a;
+    --a2-bg:#6a3d10;--a2-fg:#ffc98a;
+    --r-bg:#4d1d1f;--r-fg:#ff9fa1;
+    --n-bg:#2a3240;--n-fg:#a5b0c2;
+    --b-bg:#1f3158;--b-fg:#9db9ff;
+    --stripe:#212a3a;--sep:#e6eaf2;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:none;margin:0 auto;padding:12px 6px}
+h1{font-size:19px;margin:0}
+h1 small{display:block;font-size:12px;font-weight:400;color:var(--mute);margin-top:2px}
+h2{font-size:15px;margin:0 0 8px}
+h3{font-size:13px;margin:14px 0 6px}
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.uploads{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.up{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--mute)}
+.up input{font-size:12px;max-width:230px}
+.up .fn{color:var(--ink);font-size:11px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button,.btn{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);min-height:78px}
+.kpi .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.03em}
+.kpi .v{font-size:22px;font-weight:650;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:11px;color:var(--mute);margin-top:2px}
+.kpi.g{border-left:4px solid var(--g-fg)}.kpi.a1,.kpi.a2{border-left:4px solid var(--a2-fg)}.kpi.r{border-left:4px solid var(--r-fg)}.kpi.n{border-left:4px solid var(--n-fg)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:10px;font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--card)}
+.seg button.on{background:var(--accent);color:#fff}
+.tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 12px;font-size:13px;color:var(--mute)}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tw{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
+th,td{padding:6px 5px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle}
+th{position:sticky;top:0;background:var(--head);z-index:2;font-weight:600;font-size:11.5px;line-height:1.2;white-space:normal;vertical-align:bottom;cursor:pointer;user-select:none}
+th.nosort{cursor:default}
+th.sorted{color:var(--accent)}
+th.l,td.l{text-align:left}
+td{background:var(--card)}
+tbody tr:nth-child(even) td{background:var(--stripe)}
+td.l:first-child,th.l:first-child{position:sticky;left:0;z-index:1}
+th.l:first-child{background:var(--head);z-index:3}
+tbody tr.total td{background:var(--head);font-weight:600;border-bottom:2px solid var(--mute)}
+tr.click{cursor:pointer}
+tbody tr.click:hover td{background:var(--sel)}
+tbody tr.sel td{background:var(--sel)}
+.vsep{border-left:2px solid var(--sep)!important}
+.cw{position:relative;display:inline-block}
+.cw .bdg{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:6px;white-space:nowrap}
+.bdg .badge{margin:0}.bdg .badge+.badge{margin-left:3px}
+.sub{font-size:10.5px;color:var(--mute);white-space:normal;max-width:150px;text-align:left}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:600;cursor:help}
+.chip.g{background:var(--g-bg);color:var(--g-fg)}
+.chip.a1{background:var(--a1-bg);color:var(--a1-fg)}
+.chip.a2{background:var(--a2-bg);color:var(--a2-fg)}
+.chip.r{background:var(--r-bg);color:var(--r-fg)}
+.chip.n{background:var(--n-bg);color:var(--n-fg)}
+.chip.b{background:var(--b-bg);color:var(--b-fg)}
+.badge{display:inline-block;margin-left:4px;padding:0 5px;border-radius:4px;font-size:10px;background:var(--n-bg);color:var(--n-fg);cursor:help;vertical-align:1px}
+.t-g{color:var(--g-fg);font-weight:600}.t-a1,.t-a2{color:var(--a2-fg);font-weight:600}.t-r{color:var(--r-fg);font-weight:600}
+.dec{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--n-fg)}
+.dec.inc .dot{background:var(--g-fg)}.dec.cau .dot{background:#d99a00}.dec.hold .dot{background:var(--b-fg)}.dec.red .dot{background:var(--r-fg)}
+.wow{font-size:10.5px;margin-left:4px;cursor:help}.wow.up{color:var(--g-fg)}.wow.dn{color:var(--r-fg)}.wow.flat{color:var(--mute)}
+.mute{color:var(--mute)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.note{padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:10px;background:var(--a1-bg);color:var(--a1-fg)}
+.note.info{background:var(--b-bg);color:var(--b-fg)}
+.note.err{background:var(--r-bg);color:var(--r-fg)}
+.note.ok{background:var(--g-bg);color:var(--g-fg)}
+.empty{text-align:center;padding:40px 16px;color:var(--mute)}
+input[type=number],input[type=date],select,textarea{font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:5px;padding:3px 5px;background:var(--card);color:var(--ink)}
+input[type=number]{width:74px;text-align:right}
+input.wide{width:92px}
+textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.tbl-sm td,.tbl-sm th{padding:4px 6px}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px 18px}
+.plist label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px}
+ul.v{margin:0;padding-left:0;list-style:none}
+ul.v li{padding:5px 0 5px 22px;position:relative;border-bottom:1px solid var(--line);font-size:12.5px}
+ul.v li:before{content:"•";position:absolute;left:6px}
+ul.v li.warn:before{content:"⚠";color:var(--a2-fg)}
+ul.v li.ok:before{content:"✓";color:var(--g-fg)}
+ul.v li.err:before{content:"✕";color:var(--r-fg)}
+#tip{position:fixed;z-index:50;max-width:340px;background:#0f1522;color:#eef2fa;font-size:12px;line-height:1.4;padding:7px 10px;border-radius:6px;pointer-events:none;white-space:pre-line;display:none;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+@media (max-width:640px){.wrap{padding:12px 8px}.kpi .v{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Adspend Decision Dashboard<small>FPROAS-to-target + spend pacing, by country × user type</small></h1>
+    <div class="uploads">
+      <label class="up">Premium User Data (CSV / XLSX)<input type="file" id="f-prem" accept=".csv,.txt,.xlsx,.xls,.xlsm"><span class="fn" id="fn-prem">no file</span></label>
+      <label class="up">Adspend Data (CSV / XLSX)<input type="file" id="f-ad" accept=".csv,.txt,.xlsx,.xls,.xlsm"><span class="fn" id="fn-ad">no file</span></label>
+      <label class="up">LTV table (optional XLSX)<input type="file" id="f-ltv" accept=".xlsx,.xls"><span class="fn" id="fn-ltv">built-in · as of 5 Aug 2026</span></label>
+      <button id="btn-demo" data-tip="Generates synthetic premium + adspend data and a placeholder budget so you can try the dashboard. Replaced as soon as you upload real files.">Load demo data</button>
+      <button id="btn-qlik" class="primary" data-tip="Load the latest data file fetched from Qlik (data/qlik_data.json). Updated weekly by the scheduled job.">↻ Load Qlik data</button>
+      <button id="btn-refresh" style="display:none" data-tip="Trigger an on-demand Qlik pull. This calls a serverless function which connects to Qlik, fetches fresh data, and reloads the dashboard (takes ~2 min).">⟳ Refresh from Qlik</button>
+      <span id="qlik-status" style="font-size:11px;color:var(--mute)"></span>
+    </div>
+  </div>
+  <div id="msg"></div>
+  <div id="banner"></div>
+  <div class="toolbar" id="toolbar"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panel"></div>
+</div>
+<div id="tip"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   CONFIG  (everything the business can edit lives here / in the UI)
+   ===================================================================== */
+const VALID = ['AR','BE','BR','CA','CO','DE','DK','ES','FI','FR','GB','IE','IT','MX','MY','NL','NO','PL','PT','RO'];
+const VIDX = Object.create(null); VALID.forEach((c,i)=>{VIDX[c]=i;});
+const NEW_MARKETS = ['FR','GB','IE','PL','PT','RO'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ROLE = {1:'Parents',2:'Sitters'};
+const DEFAULT_TARGETS = {1:.51,2:.50,3:.51,4:.51,5:.52,6:.54,7:.54,8:.55,9:.58,10:.57,11:.53,12:.55};
+/* PLANNED_SPEND[country][month] = [parentsEUR, sittersEUR]  (full-month plan).
+   Left empty on purpose: fill it from the "2026 Budget Calculations" sheet via the
+   PLANNED_TOTAL / SEED_PLAN below, or by editing this object. */
+const PLANNED_SPEND = {};
+/* PLANNED_TOTAL[country][month] = full-month total EUR when only the country total is known.
+   It is split Parents/Sitters using each country's trailing-28-day adspend mix (ROLE_SPLIT). An explicit
+   PLANNED_SPEND entry for the same country/month always wins. */
+const PLANNED_TOTAL = {};
+const ROLE_SPLIT = {};
+/* Seed: 2026 plan, Oct-Dec (Table B adspend totals, Table E FPROAS plan). */
+const SEED_PLAN_ROLE = {   // [Parents[Oct,Nov,Dec], Sitters[Oct,Nov,Dec]]  (EUR, full month)
+  IT:[[51200,34000,27000],[26100,20000,8000]], NL:[[15500,14500,11300],[10000,9500,7500]], ES:[[25291,20535,15841],[9128,7362,3096]],
+  BR:[[17329,17430,15387],[4455,5012,3486]], NO:[[3000,2900,2500],[2700,2500,2250]], CA:[[19000,19000,17600],[9701,8731,7858]],
+  DE:[[19000,17000,13000],[8000,7200,6480]], MY:[[2600,2600,2400],[1200,1200,1100]], BE:[[7264,6748,6309],[4354,4217,3664]],
+  DK:[[3345,3547,1700],[3099,2703,1500]], FI:[[1888,1841,1670],[2017,1910,1520]], AR:[[2202,2173,2100],[154,150,140]]};
+/* New markets: country totals (IE, PL, RO) + the group's Parents/Sitters mix per month; FR, GB, PT have no budget */
+const SEED_PLAN_NEW = {IE:[7745,7062,5923],PL:[6494,5921,4966],RO:[2761,2517,2111]};
+const SEED_NEW_MIX = [[13950,3050],[12700,2800],[10650,2350]];   // [Parents, Sitters] for all new markets, Oct/Nov/Dec
+const SEED_FPROAS = {IT:[.701,.741,.741],ES:[.773,.769,.713],NL:[.832,.834,.872],BR:[.760,.759,.742],CA:[.574,.574,.583],DE:[.594,.595,.608],NO:[.686,.695,.738],BE:[.528,.529,.539],DK:[.577,.578,.591],FI:[.672,.673,.684],MY:[.765,.766,.787],AR:[.537,.536,.520],IE:[.306,.306,.306],PL:[.347,.347,.347],RO:[.580,.580,.580]};
+const SEED_GLOBAL_FPROAS = [.670,.676,.670];
+/* Role-level FPROAS plan [Parents[Oct,Nov,Dec], Sitters[Oct,Nov,Dec]] for the established 12 (new markets: country-level target only) */
+const SEED_ROLE_FPROAS = {
+  IT:[[.715,.723,.725],[.675,.776,.776]], ES:[[.316,.316,.316],[2,2,2]], NL:[[1.201,1.201,1.201],[.306,.306,.306]],
+  BR:[[.629,.629,.629],[1.223,1.223,1.223]], CA:[[.649,.649,.649],[.430,.430,.430]], DE:[[.704,.704,.704],[.359,.359,.359]],
+  NO:[[1.084,1.097,1.109],[.259,.259,.259]], BE:[[.621,.621,.621],[.379,.379,.379]], DK:[[.699,.699,.701],[.442,.442,.442]],
+  FI:[[.803,.803,.803],[.550,.550,.550]], MY:[[.947,.947,.947],[.390,.390,.390]], AR:[[.432,.432,.432],[2,2,2]]};
+const SEED_STAMP = '2026-10-06';
+/* -----------------------------------------------------------------------
+   QLIK AUTO-LOAD CONFIG
+   QLIK_DATA_URL: path to the pre-built JSON produced by fetch_qlik_data.py.
+     Relative to the HTML file. Set to '' to disable auto-load.
+   QLIK_REFRESH_API: optional URL of a serverless function that triggers a
+     fresh Qlik pull and regenerates the JSON. Set to '' to disable the button.
+----------------------------------------------------------------------- */
+const QLIK_DATA_URL = './data/qlik_data.json';
+const QLIK_REFRESH_API = '';   // e.g. 'https://your-site.vercel.app/api/refresh'
+/* LTV table: seg['DE|1']=[nUsers, firstPmt/user, LM12, LTV/user]; combo['DE|1|<psp*5+dur>']=[nUsers, LTV/user]
+   psp: 0 adyen/dLocal/iDeal, 1 apple, 2 google; dur: 0 '1', 1 '3', 2 '6', 3 '12', 4 other.
+   Source: Sitly_LTV_12M_by_segment.xlsx (cohort data uploaded 5 Aug 2026). Replaceable via the LTV upload. */
+const LTV_DEFAULT = {"asOf":"2026-08-05","seg":{"AR|1":[9435,7.34,2.45,17.98],"AR|2":[9665,5.35,2.04,10.91],"BE|1":[9364,18.19,2.872,52.25],"BE|2":[7106,9.95,2.154,21.42],"BR|1":[52918,8.87,2.6,23.06],"BR|2":[73496,4.92,2.151,10.57],"CA|1":[13840,26.51,2.515,66.69],"CA|2":[33141,13.43,2.339,31.41],"DE|1":[13270,29.8,2.559,76.26],"DE|2":[15351,11.16,2.059,22.97],"DK|1":[2933,32.05,2.479,79.45],"DK|2":[5430,12.23,2.226,27.22],"ES|1":[24424,15.01,2.714,40.74],"ES|2":[123552,9,2.174,19.57],"FI|1":[3775,20.63,2.637,54.41],"FI|2":[6203,9.36,2.368,22.16],"FR|1":[69,27.67,1.899,52.54],"FR|2":[112,12.37,1.406,17.39],"GB|1":[106,30.99,1.693,52.48],"GB|2":[186,11.27,1.47,16.57],"IE|1":[248,29.58,1.928,57.02],"IE|2":[182,14.95,1.677,25.08],"IT|1":[89856,18.98,2.845,54.02],"IT|2":[128837,9.78,2.372,23.19],"MY|1":[6568,15.59,2.235,34.85],"MY|2":[7426,8.56,1.959,16.77],"NL|1":[41961,21.69,2.838,61.57],"NL|2":[33919,9.78,2.234,21.85],"NO|1":[7096,28.02,3.217,90.11],"NO|2":[6047,12.75,2.645,33.72],"PL|1":[290,24.27,1.743,42.3],"PL|2":[403,5.57,1.613,8.98],"PT|1":[101,16.08,1.739,27.97],"PT|2":[206,9.8,1.65,16.16],"RO|1":[515,13.25,1.808,23.95],"RO|2":[462,5.51,1.638,9.03]},"combo":{"AR|1|0":[4687,18.94],"AR|1|1":[517,28.62],"AR|1|2":[100,21.36],"AR|1|5":[1566,11.41],"AR|1|6":[457,12.39],"AR|1|7":[48,14.51],"AR|1|8":[45,36.23],"AR|1|10":[1669,12.74],"AR|1|11":[323,17.89],"AR|1|12":[17,22.43],"AR|1|14":[6,11.51],"AR|2|0":[4294,9.97],"AR|2|1":[666,14.65],"AR|2|2":[125,13.38],"AR|2|5":[911,8.26],"AR|2|6":[288,10.66],"AR|2|7":[51,11.35],"AR|2|8":[50,18.73],"AR|2|10":[2784,9.11],"AR|2|11":[425,11.47],"AR|2|12":[61,27],"AR|2|14":[10,6.26],"BE|1|0":[5266,47.58],"BE|1|1":[1379,69.53],"BE|1|2":[152,53.25],"BE|1|5":[1138,36.61],"BE|1|6":[556,37.4],"BE|1|7":[125,58.42],"BE|1|10":[674,43.29],"BE|1|11":[70,50.32],"BE|1|12":[2,25.22],"BE|1|14":[2,21.07],"BE|2|0":[2792,19.2],"BE|2|1":[1368,25.01],"BE|2|2":[78,32.14],"BE|2|5":[1702,16.74],"BE|2|6":[392,18.49],"BE|2|7":[144,25.98],"BE|2|10":[553,19.42],"BE|2|11":[62,26.25],"BE|2|12":[12,28.39],"BE|2|14":[3,15.57],"BR|1|0":[23178,25.47],"BR|1|1":[2788,34.21],"BR|1|2":[574,29.59],"BR|1|5":[14961,16.43],"BR|1|6":[2232,20.51],"BR|1|7":[882,65.18],"BR|1|10":[7132,15.36],"BR|1|11":[1028,21.5],"BR|1|12":[120,31.44],"BR|1|14":[23,11.34],"BR|2|0":[23502,11.7],"BR|2|1":[3592,16.51],"BR|2|2":[285,18.34],"BR|2|5":[13699,7.37],"BR|2|6":[1597,10.34],"BR|2|7":[724,38.91],"BR|2|10":[25879,8.62],"BR|2|11":[3893,12.84],"BR|2|12":[260,20.18],"BR|2|14":[65,6.6],"CA|1|0":[9095,67.54],"CA|1|1":[1252,105.51],"CA|1|2":[2,66.86],"CA|1|5":[2146,39.08],"CA|1|6":[458,60.81],"CA|1|7":[105,63.17],"CA|1|10":[672,44.52],"CA|1|11":[104,76.93],"CA|1|12":[4,33.62],"CA|1|14":[2,41.14],"CA|2|0":[18381,32.35],"CA|2|1":[2523,45.94],"CA|2|2":[253,35.87],"CA|2|5":[7425,20.58],"CA|2|6":[1536,28.68],"CA|2|7":[546,46.9],"CA|2|10":[2129,25.04],"CA|2|11":[306,35.28],"CA|2|12":[37,35.29],"CA|2|14":[5,21.74],"DE|1|0":[8275,76.28],"DE|1|1":[1402,115.77],"DE|1|5":[2118,51.94],"DE|1|6":[575,64.52],"DE|1|7":[33,83.29],"DE|1|10":[732,52.5],"DE|1|11":[131,87.34],"DE|1|12":[2,25.64],"DE|1|14":[2,42.85],"DE|2|0":[5983,23.42],"DE|2|1":[1762,32.77],"DE|2|2":[206,32.11],"DE|2|5":[4842,15.12],"DE|2|6":[1167,19.13],"DE|2|7":[337,31.74],"DE|2|10":[692,16.58],"DE|2|11":[326,23.34],"DE|2|12":[30,25.58],"DE|2|14":[6,21.65],"DK|1|0":[1656,79.98],"DK|1|1":[562,96.95],"DK|1|5":[490,62.29],"DK|1|6":[83,76.62],"DK|1|7":[1,8.21],"DK|1|10":[79,65.21],"DK|1|11":[60,54.72],"DK|1|12":[1,34.48],"DK|1|14":[1,34.44],"DK|2|0":[2937,26.43],"DK|2|1":[396,40.6],"DK|2|2":[28,32.11],"DK|2|5":[1686,20.4],"DK|2|6":[183,30.14],"DK|2|7":[57,32.84],"DK|2|10":[115,27.29],"DK|2|11":[26,27.25],"DK|2|12":[1,34.47],"DK|2|14":[1,18.13],"ES|1|0":[13924,41.6],"ES|1|1":[1648,60.91],"ES|1|2":[195,42.21],"ES|1|5":[4532,28.16],"ES|1|6":[876,34.91],"ES|1|7":[191,150.04],"ES|1|8":[1,52.83],"ES|1|10":[2728,29.63],"ES|1|11":[304,40.51],"ES|1|12":[21,39.52],"ES|1|14":[4,20.12],"ES|2|0":[53505,19.69],"ES|2|1":[6722,28.76],"ES|2|2":[446,27.12],"ES|2|5":[29949,15.14],"ES|2|6":[5823,20.27],"ES|2|7":[1488,69.28],"ES|2|8":[2,25.21],"ES|2|10":[22507,16.71],"ES|2|11":[2900,24.51],"ES|2|12":[170,35.46],"ES|2|14":[40,15.47],"FI|1|0":[1755,58.43],"FI|1|1":[1056,56.32],"FI|1|2":[39,70.53],"FI|1|5":[482,38.06],"FI|1|6":[114,39.98],"FI|1|7":[20,60.67],"FI|1|10":[171,39.21],"FI|1|11":[132,31.44],"FI|1|14":[6,20.04],"FI|2|0":[2525,23.25],"FI|2|1":[602,31.21],"FI|2|2":[47,28.3],"FI|2|5":[2072,15.36],"FI|2|6":[266,20.14],"FI|2|7":[53,23.61],"FI|2|10":[485,18.81],"FI|2|11":[141,28.08],"FI|2|12":[10,32.44],"FI|2|14":[2,12.18],"FR|1|0":[45,62.84],"FR|1|1":[5,53.92],"FR|1|2":[4,64.95],"FR|1|5":[5,26.56],"FR|1|6":[5,39.52],"FR|1|7":[3,52.32],"FR|1|10":[2,22.6],"FR|2|0":[34,13.42],"FR|2|1":[7,24.16],"FR|2|2":[6,24.95],"FR|2|5":[33,12.68],"FR|2|6":[2,31.87],"FR|2|7":[15,23.46],"FR|2|10":[9,15.71],"FR|2|11":[2,17.94],"FR|2|12":[4,25.43],"GB|1|0":[73,53.91],"GB|1|1":[7,87.08],"GB|1|5":[14,27.02],"GB|1|6":[2,30.91],"GB|1|7":[3,64.84],"GB|1|10":[5,32.04],"GB|1|11":[1,117.19],"GB|1|12":[1,24.55],"GB|2|0":[64,15.24],"GB|2|1":[17,25.44],"GB|2|2":[13,30.9],"GB|2|5":[56,9.06],"GB|2|6":[2,24.36],"GB|2|7":[18,20.27],"GB|2|10":[10,15.89],"GB|2|11":[2,22.28],"GB|2|12":[4,24.44],"IE|1|0":[144,46.88],"IE|1|1":[16,118.33],"IE|1|2":[31,67.12],"IE|1|5":[35,34.18],"IE|1|6":[4,42.86],"IE|1|7":[5,61],"IE|1|10":[11,30.91],"IE|1|11":[1,45.54],"IE|1|12":[1,37.25],"IE|2|0":[82,20.22],"IE|2|1":[13,29.6],"IE|2|2":[15,36.34],"IE|2|5":[47,21.84],"IE|2|6":[4,56.61],"IE|2|7":[5,74.94],"IE|2|10":[1,11.05],"IE|2|11":[2,48.79],"IE|2|12":[1,37.25],"IE|2|14":[12,18.76],"IT|1|0":[50297,55],"IT|1|1":[6733,79.05],"IT|1|2":[869,57.68],"IT|1|5":[15392,34.68],"IT|1|6":[3781,48.9],"IT|1|7":[1045,112.06],"IT|1|10":[8260,38.17],"IT|1|11":[3293,43.4],"IT|1|12":[117,69.41],"IT|1|14":[69,23.38],"IT|2|0":[60837,24.28],"IT|2|1":[11128,33.73],"IT|2|2":[562,35.56],"IT|2|5":[33330,15.57],"IT|2|6":[4751,22.36],"IT|2|7":[1556,53.9],"IT|2|10":[13820,19.72],"IT|2|11":[2690,26.45],"IT|2|12":[135,39.62],"IT|2|14":[28,15.44],"MY|1|0":[2705,39.58],"MY|1|1":[503,48.68],"MY|1|2":[72,83.32],"MY|1|5":[1791,20.03],"MY|1|6":[408,30.11],"MY|1|7":[46,47.62],"MY|1|8":[35,72.37],"MY|1|10":[735,23.43],"MY|1|11":[262,30.99],"MY|1|12":[9,48.99],"MY|1|14":[2,21.4],"MY|2|0":[2117,19.58],"MY|2|1":[580,22.86],"MY|2|2":[20,26.93],"MY|2|5":[2094,10.54],"MY|2|6":[242,17.51],"MY|2|7":[29,22.62],"MY|2|8":[20,22.01],"MY|2|10":[2005,14.08],"MY|2|11":[296,20.79],"MY|2|12":[19,27.63],"MY|2|14":[4,11.09],"NL|1|0":[27529,59.41],"NL|1|1":[4397,85.03],"NL|1|2":[360,75.6],"NL|1|5":[5632,39.83],"NL|1|6":[1125,49.09],"NL|1|7":[189,80.83],"NL|1|10":[2229,41.17],"NL|1|11":[484,60.59],"NL|1|12":[6,25.22],"NL|1|14":[10,29.67],"NL|2|0":[18561,21.56],"NL|2|1":[3716,30.96],"NL|2|2":[214,30.01],"NL|2|5":[8155,14.21],"NL|2|6":[1102,19.96],"NL|2|7":[305,30.73],"NL|2|10":[1429,16.79],"NL|2|11":[404,24.5],"NL|2|12":[30,36.53],"NL|2|14":[3,12.64],"NO|1|0":[4204,104.86],"NO|1|1":[555,123.96],"NO|1|5":[1587,50.51],"NO|1|6":[246,68.25],"NO|1|7":[38,65.03],"NO|1|10":[395,58.79],"NO|1|11":[68,82.97],"NO|1|12":[1,7.19],"NO|1|14":[2,34.43],"NO|2|0":[2528,39.24],"NO|2|1":[547,52.94],"NO|2|2":[21,40.55],"NO|2|5":[2443,23.05],"NO|2|6":[184,29.24],"NO|2|7":[58,61.33],"NO|2|10":[213,27.12],"NO|2|11":[49,25.46],"NO|2|12":[4,34.27],"PL|1|0":[173,42.25],"PL|1|1":[14,53.19],"PL|1|2":[23,57.18],"PL|1|5":[44,35.77],"PL|1|6":[5,49.3],"PL|1|7":[3,56.58],"PL|1|10":[21,27.21],"PL|1|11":[3,32.1],"PL|1|12":[4,24.23],"PL|2|0":[177,8.07],"PL|2|1":[20,13.47],"PL|2|2":[49,11.7],"PL|2|5":[86,6.72],"PL|2|6":[5,8.24],"PL|2|7":[19,10.82],"PL|2|10":[36,8.38],"PL|2|11":[3,24.57],"PL|2|12":[8,11.68],"PT|1|0":[65,25.38],"PT|1|1":[4,43.86],"PT|1|2":[4,38.98],"PT|1|5":[18,28.65],"PT|1|6":[1,32.51],"PT|1|7":[4,38.96],"PT|1|10":[5,21.63],"PT|2|0":[75,14.46],"PT|2|1":[23,20.14],"PT|2|2":[9,19.46],"PT|2|5":[54,10.65],"PT|2|6":[5,28.7],"PT|2|7":[17,31.31],"PT|2|10":[15,10.3],"PT|2|11":[3,14.44],"PT|2|12":[5,20.66],"RO|1|0":[261,21.51],"RO|1|1":[41,36.05],"RO|1|2":[40,31.03],"RO|1|5":[89,17.89],"RO|1|6":[13,24.51],"RO|1|7":[22,26.4],"RO|1|10":[36,17.5],"RO|1|11":[4,28.07],"RO|1|12":[9,30.01],"RO|2|0":[190,8.38],"RO|2|1":[39,13.17],"RO|2|2":[27,12.99],"RO|2|5":[119,6.64],"RO|2|7":[25,13.85],"RO|2|10":[37,8.53],"RO|2|11":[16,6.18],"RO|2|12":[9,8.38]}};
+const LTV = JSON.parse(JSON.stringify(LTV_DEFAULT));
+const NAME2CODE = {Argentina:'AR',Belgium:'BE',Brazil:'BR',Canada:'CA',Germany:'DE',Denmark:'DK',Spain:'ES',Finland:'FI',France:'FR','United Kingdom':'GB',Ireland:'IE',Italy:'IT',Malaysia:'MY',Netherlands:'NL',Norway:'NO',Poland:'PL',Portugal:'PT',Romania:'RO'};
+const CFG = {
+  targets: Object.assign({}, DEFAULT_TARGETS),
+  countryTargets: {},           // {DE:{5:.53}} optional per-country override
+  roleTargets: {},              // {DE:{1:{10:.70}}} optional per country × role (1 Parents, 2 Sitters) override
+  targetsUpdated: '',
+  plannedUpdated: '',
+  params: {
+    runWindow:'7d',             // run-rate for remaining spend: 7d | 14d | MTD
+    ceilPct:0.90, ceilStretch:1.15, ceilMinWeeks:6, ceilWeeks:12,
+    minDays:8, adFloor:50, lightAmber:1.10,
+    ltvGreen:1.5, ltvAmber:1.0, ltvMinUsers:30, ltvMinN:30,
+    pace:{gLo:.95,gHi:1.05,aLo:.85,aHi:1.15},
+    decay:0.05
+  }
+};
+
+/* =====================================================================
+   UTILS
+   ===================================================================== */
+const DAY=86400000;
+const dn=(y,m,d)=>Math.floor(Date.UTC(y,m-1,d)/DAY);
+const fromDn=n=>{const t=new Date(n*DAY);return{y:t.getUTCFullYear(),m:t.getUTCMonth()+1,d:t.getUTCDate()};};
+const dimOf=(y,m)=>new Date(Date.UTC(y,m,0)).getUTCDate();
+const isoOf=n=>{const o=fromDn(n);return o.y+'-'+String(o.m).padStart(2,'0')+'-'+String(o.d).padStart(2,'0');};
+const prettyDay=n=>{const o=fromDn(n);return o.d+' '+MONTHS[o.m-1]+' '+o.y;};
+const validYMD=(y,m,d)=>y>=2000&&y<=2100&&m>=1&&m<=12&&d>=1&&d<=dimOf(y,m);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const isNum=v=>typeof v==='number'&&isFinite(v);
+const todayISO=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
+const ratio=(a,b)=>(b>0&&isFinite(a/b))?a/b:null;
+
+function parseDay(v){
+  if(v==null||v==='')return null;
+  if(v instanceof Date){
+    if(isNaN(v))return null;
+    const t=new Date(v.getTime()+3600000);            // absorbs SheetJS sub-hour timezone drift
+    return dn(t.getFullYear(),t.getMonth()+1,t.getDate());
+  }
+  if(typeof v==='number'){ return (v>20000&&v<80000)?dn(1899,12,30)+Math.floor(v):null; }
+  const s=String(v).trim(); let m;
+  if((m=/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/.exec(s))){const y=+m[1],mo=+m[2],d=+m[3];return validYMD(y,mo,d)?dn(y,mo,d):null;}
+  if((m=/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/.exec(s))){
+    let d=+m[1],mo=+m[2],y=+m[3]; if(y<100)y+=2000;
+    if(mo>12&&d<=12){const t=d;d=mo;mo=t;}             // DD/MM/YYYY first, MM/DD only if unambiguous
+    return validYMD(y,mo,d)?dn(y,mo,d):null;
+  }
+  if(/^\d{5}$/.test(s))return parseDay(+s);
+  if(/[a-z]/i.test(s)){const t=new Date(s);if(!isNaN(t))return dn(t.getFullYear(),t.getMonth()+1,t.getDate());}
+  return null;
+}
+function parseNum(v){
+  if(typeof v==='number')return isFinite(v)?v:0;
+  if(v==null)return 0;
+  let s=String(v).replace(/[€\s %]/g,'');
+  if(s===''||s==='-')return 0;
+  const lc=s.lastIndexOf(','),ld=s.lastIndexOf('.');
+  if(lc>=0&&ld>=0){s=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');}
+  else if(lc>=0){s=/^-?\d{1,3}(,\d{3})+$/.test(s)?s.replace(/,/g,''):(/,\d{1,2}$/.test(s)?s.replace(',','.'):s.replace(/,/g,''));}
+  const n=parseFloat(s);return isFinite(n)?n:0;
+}
+/* formatting – never emits NaN / Infinity */
+const nf0=new Intl.NumberFormat('en-GB',{maximumFractionDigits:0});
+function fmtEur(v,signed){
+  if(!isNum(v))return '–';
+  const a=Math.abs(v),sg=v<0?'−':(signed&&v>0?'+':'');
+  if(a>=10000)return sg+'€'+(a/1000).toFixed(1)+'k';
+  return sg+'€'+nf0.format(Math.round(a));
+}
+const fmtEurFull=v=>isNum(v)?(v<0?'−':'')+'€'+nf0.format(Math.round(Math.abs(v))):'–';
+const fmtPct=(v,dp=1)=>isNum(v)?(v*100).toFixed(dp)+'%':'–';
+const fmtPP=(d)=>isNum(d)?(d>=0?'+':'−')+Math.abs(d*100).toFixed(1)+'pp':'–';
+
+/* =====================================================================
+   FILE PARSING
+   ===================================================================== */
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+  const nl=text.indexOf('\n'); const first=text.slice(0,nl<0?text.length:nl);
+  const delim=[',',';','\t'].map(d=>[d,first.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=[];let row=[],field='',inQ=false;
+  for(let i=0,n=text.length;i<n;i++){
+    const ch=text[i];
+    if(inQ){ if(ch==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=ch; }
+    else if(ch==='"')inQ=true;
+    else if(ch===delim){row.push(field);field='';}
+    else if(ch==='\n'){row.push(field);field='';rows.push(row);row=[];}
+    else if(ch!=='\r')field+=ch;
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+function toTable(rows){
+  let hi=0;
+  for(let i=0;i<Math.min(rows.length,15);i++){ if(rows[i].some(c=>/country/i.test(String(c)))){hi=i;break;} }
+  return {headers:(rows[hi]||[]).map(h=>String(h==null?'':h).trim()),rows:rows.slice(hi+1)};
+}
+function pickCol(H,test,prefer){
+  const c=[];H.forEach((h,i)=>{if(test(h))c.push(i);});
+  if(!c.length)return -1;
+  if(prefer){const p=c.find(i=>prefer(H[i]));if(p!=null)return p;}
+  return c[0];
+}
+function newStats(t){return{rows:t.rows.length,kept:0,dropCountry:{},dropRole:0,badDate:0,missing:[],minDay:Infinity,maxDay:-Infinity,countries:new Set()};}
+
+const pspIdx=v=>{const x=String(v==null?'':v).toLowerCase();return x.includes('apple')?1:(x.includes('google')?2:0);};
+const durIdx=v=>{const n=parseInt(v,10);return n===1?0:n===3?1:n===6?2:n===12?3:4;};
+function processPremium(t){
+  const H=t.headers.map(h=>h.toLowerCase());
+  const ix={
+    c:pickCol(H,h=>h.includes('country')),
+    r:pickCol(H,h=>h.includes('webrole')),
+    d:pickCol(H,h=>h.includes('calendar')&&h.includes('date')),
+    fp:pickCol(H,h=>h.includes('first'),h=>h.includes('€')),
+    ret:pickCol(H,h=>h.includes('returning'),h=>h.includes('€')),
+    ini:pickCol(H,h=>h.includes('initial'),h=>h.includes('€')),
+    rec:pickCol(H,h=>h.includes('recurring'),h=>h.includes('€')),
+    nu:pickCol(H,h=>h.includes('new premium')),
+    psp:pickCol(H,h=>h==='psp'||h.startsWith('psp')),
+    dur:pickCol(H,h=>h.includes('duration'))
+  };
+  if(ix.d<0)ix.d=pickCol(H,h=>h==='date'||h.endsWith(' date'));
+  const st=newStats(t),agg=new Map(),mix=new Map();
+  st.hasMix=ix.psp>=0&&ix.dur>=0&&ix.nu>=0;
+  [['c','country_lt'],['r','webrole id'],['d','calendar date'],['fp','(€) First Payments']].forEach(([k,n])=>{if(ix[k]<0)st.missing.push(n);});
+  const soft=[];if(ix.rec<0)soft.push('(€) Recurring');if(ix.ret<0&&ix.ini<0)soft.push('(€) Returning');if(ix.nu<0)soft.push('Total No. NEW Premium Users');
+  st.softMissing=soft;
+  if(st.missing.length)return{agg,st,mix};
+  const useIni=ix.ret<0&&ix.ini>=0;
+  for(const r of t.rows){
+    const c=String(r[ix.c]==null?'':r[ix.c]).trim().toUpperCase();
+    if(!(c in VIDX)){const k=c||'(blank)';st.dropCountry[k]=(st.dropCountry[k]||0)+1;continue;}
+    const rv=r[ix.r];const role=(rv===''||rv==null||rv==='-')?0:parseInt(rv,10);
+    if(role!==1&&role!==2){st.dropRole++;continue;}
+    const day=parseDay(r[ix.d]);if(day==null){st.badDate++;continue;}
+    const fp=parseNum(r[ix.fp]),rec=ix.rec>=0?parseNum(r[ix.rec]):0;
+    const rev=useIni?parseNum(r[ix.ini])+rec:fp+rec+(ix.ret>=0?parseNum(r[ix.ret]):0);
+    const nu=ix.nu>=0?parseNum(r[ix.nu]):0;
+    const key=(VIDX[c]*2+role-1)*65536+day;
+    let a=agg.get(key);if(!a){a=[0,0,0];agg.set(key,a);}
+    a[0]+=fp;a[1]+=rev;a[2]+=nu;
+    if(st.hasMix&&nu){const mk=((VIDX[c]*2+role-1)*15+pspIdx(r[ix.psp])*5+durIdx(r[ix.dur]))*65536+day;mix.set(mk,(mix.get(mk)||0)+nu);}
+    st.kept++;st.countries.add(c);
+    if(day<st.minDay)st.minDay=day;if(day>st.maxDay)st.maxDay=day;
+  }
+  return{agg,st,mix};
+}
+function processAdspend(t){
+  const H=t.headers.map(h=>h.toLowerCase());
+  const ix={
+    c:pickCol(H,h=>h.includes('country')),
+    r:pickCol(H,h=>h.includes('webrole')),
+    d:pickCol(H,h=>h.includes('calendar')&&h.includes('date')),
+    a:pickCol(H,h=>h.includes('adspend'),h=>h==='adspend')
+  };
+  if(ix.d<0)ix.d=pickCol(H,h=>h==='date'||h.endsWith(' date'));
+  const st=newStats(t),agg=new Map();
+  [['c','country_lt'],['r','webrole id'],['d','calendar date'],['a','Adspend']].forEach(([k,n])=>{if(ix[k]<0)st.missing.push(n);});
+  st.softMissing=[];
+  if(st.missing.length)return{agg,st};
+  for(const r of t.rows){
+    const c=String(r[ix.c]==null?'':r[ix.c]).trim().toUpperCase();
+    if(!(c in VIDX)){const k=c||'(blank)';st.dropCountry[k]=(st.dropCountry[k]||0)+1;continue;}
+    const rv=r[ix.r];const role=(rv===''||rv==null||rv==='-')?0:parseInt(rv,10);
+    if(role!==1&&role!==2){st.dropRole++;continue;}
+    const day=parseDay(r[ix.d]);if(day==null){st.badDate++;continue;}
+    const key=(VIDX[c]*2+role-1)*65536+day;
+    agg.set(key,(agg.get(key)||0)+parseNum(r[ix.a]));
+    st.kept++;st.countries.add(c);
+    if(day<st.minDay)st.minDay=day;if(day>st.maxDay)st.maxDay=day;
+  }
+  return{agg,st};
+}
+
+/* =====================================================================
+   MODEL: daily series per segment (country × role), aligned on a day axis
+   ===================================================================== */
+const segIdx=(c,role)=>VIDX[c]*2+role-1;
+function buildModel(prem,adv){
+  if(!prem||!prem.st||prem.st.maxDay<0||!isFinite(prem.st.maxDay))return null;
+  const dataDate=prem.st.maxDay;
+  let dayMin=prem.st.minDay;
+  if(adv&&adv.st&&isFinite(adv.st.minDay)&&adv.st.minDay<dayMin)dayMin=adv.st.minDay;
+  const D=dataDate-dayMin+1;
+  const ser=[];for(let i=0;i<VALID.length*2;i++)ser.push({fp:new Float64Array(D),rev:new Float64Array(D),nu:new Float64Array(D),ad:new Float64Array(D),ltv:new Float64Array(D),kn:null,hasLtv:false});
+  for(const[k,v]of prem.agg){const day=k%65536,seg=(k-day)/65536,s=ser[seg];s.fp[day-dayMin]+=v[0];s.rev[day-dayMin]+=v[1];s.nu[day-dayMin]+=v[2];}
+  let adAfter=0;
+  if(adv)for(const[k,v]of adv.agg){const day=k%65536,seg=(k-day)/65536;if(day>dataDate){adAfter++;continue;}ser[seg].ad[day-dayMin]+=v;}
+  // trailing-28-day Parents share of adspend per country: used to split country-level budgets
+  Object.keys(ROLE_SPLIT).forEach(k=>delete ROLE_SPLIT[k]);
+  const eL=D-1;
+  VALID.forEach((c,ci)=>{
+    let a=sumRange(ser[ci*2].ad,eL-27,eL),b=sumRange(ser[ci*2+1].ad,eL-27,eL);
+    if(a+b<=0){a=sumRange(ser[ci*2].ad,0,eL);b=sumRange(ser[ci*2+1].ad,0,eL);}
+    ROLE_SPLIT[c]=a+b>0?a/(a+b):null;
+  });
+  // daily LTV acquired = new premium users × LTV/user (mix-weighted by psp × duration when the extract has those columns)
+  const mixUsed=!!(prem.mix&&prem.mix.size);
+  if(mixUsed)for(const[k,u]of prem.mix){
+    const day=k%65536,sc=(k-day)/65536,combo=sc%15,seg=(sc-combo)/15,c=VALID[seg>>1],role=(seg&1)+1,sl=LTV.seg[c+'|'+role];
+    if(!sl)continue;
+    const sr=ser[seg];if(!sr.kn)sr.kn=new Float64Array(D);
+    const e=LTV.combo[c+'|'+role+'|'+combo];
+    sr.ltv[day-dayMin]+=u*(e&&e[0]>=CFG.params.ltvMinN?e[1]:sl[3]);sr.kn[day-dayMin]+=u;
+  }
+  ser.forEach((sr,seg)=>{
+    const sl=LTV.seg[VALID[seg>>1]+'|'+((seg&1)+1)];sr.hasLtv=!!sl;
+    if(sl)for(let i=0;i<D;i++){sr.ltv[i]+=Math.max(0,sr.nu[i]-(sr.kn?sr.kn[i]:0))*sl[3];}
+  });
+  const active=ser.map(s=>{let a=0;for(let i=0;i<D;i++){if(s.fp[i]||s.ad[i]){a=1;break;}}return a;});
+  return{dayMin,dataDate,D,ser,active,mixUsed,adAfter,adLast:adv&&isFinite(adv.st.maxDay)?adv.st.maxDay:null};
+}
+function makeCtx(M,s){
+  const dd=fromDn(M.dataDate),dom=dd.d-s,dim=dimOf(dd.y,dd.m);
+  const e=M.dataDate-s-M.dayMin;
+  const pmm=dd.m===1?12:dd.m-1,pmy=dd.m===1?dd.y-1:dd.y,pmS=dn(pmy,pmm,1)-M.dayMin,pmE=dn(dd.y,dd.m,1)-1-M.dayMin;
+  return{pmS,pmE,hasPM:pmS>=0,y:dd.y,m:dd.m,dom,dim,daysLeft:dim-dom,pct:dom/dim,e,ms:dn(dd.y,dd.m,1)-M.dayMin,
+    hist7:e-6>=0,hist14:e-13>=0,shift:s,dayNum:M.dataDate-s,monthStartBeforeData:dn(dd.y,dd.m,1)<M.dayMin};
+}
+const planOf=(c,m,role)=>{
+  const p=PLANNED_SPEND[c]&&PLANNED_SPEND[c][m];
+  if(p)return isFinite(p[role-1])?+p[role-1]:0;
+  const t=PLANNED_TOTAL[c]&&PLANNED_TOTAL[c][m];
+  if(t>0){const sp=ROLE_SPLIT[c]!=null?ROLE_SPLIT[c]:0.5;return t*(role===1?sp:1-sp);}
+  return 0;
+};
+const hasBudget=()=>Object.keys(PLANNED_SPEND).length>0||Object.keys(PLANNED_TOTAL).some(c=>Object.keys(PLANNED_TOTAL[c]).length>0);
+const hasExplicit=(c,m)=>!!(PLANNED_SPEND[c]&&PLANNED_SPEND[c][m]);
+function applySeed(){
+  Object.keys(SEED_PLAN_ROLE).forEach(c=>{PLANNED_SPEND[c]={};[0,1,2].forEach(i=>{PLANNED_SPEND[c][10+i]=[SEED_PLAN_ROLE[c][0][i],SEED_PLAN_ROLE[c][1][i]];});});
+  Object.keys(SEED_PLAN_NEW).forEach(c=>{PLANNED_SPEND[c]={};[0,1,2].forEach(i=>{const t=SEED_PLAN_NEW[c][i],pp=SEED_NEW_MIX[i][0]/(SEED_NEW_MIX[i][0]+SEED_NEW_MIX[i][1]);PLANNED_SPEND[c][10+i]=[t*pp,t*(1-pp)];});});
+  Object.keys(SEED_FPROAS).forEach(c=>{CFG.countryTargets[c]={10:SEED_FPROAS[c][0],11:SEED_FPROAS[c][1],12:SEED_FPROAS[c][2]};});
+  [10,11,12].forEach((m,i)=>{CFG.targets[m]=SEED_GLOBAL_FPROAS[i];});
+  Object.keys(SEED_ROLE_FPROAS).forEach(c=>{CFG.roleTargets[c]={};[1,2].forEach(r=>{CFG.roleTargets[c][r]={10:SEED_ROLE_FPROAS[c][r-1][0],11:SEED_ROLE_FPROAS[c][r-1][1],12:SEED_ROLE_FPROAS[c][r-1][2]};});});
+  CFG.plannedUpdated=SEED_STAMP;CFG.targetsUpdated=SEED_STAMP;
+}
+function snapshotPlan(){return JSON.stringify({ps:PLANNED_SPEND,pt:PLANNED_TOTAL,rt:CFG.roleTargets,ct:CFG.countryTargets,t:CFG.targets,pu:CFG.plannedUpdated,tu:CFG.targetsUpdated});}
+function restorePlan(j){
+  const o=JSON.parse(j);
+  [PLANNED_SPEND,PLANNED_TOTAL,CFG.roleTargets,CFG.countryTargets,CFG.targets].forEach(x=>Object.keys(x).forEach(k=>delete x[k]));
+  Object.assign(CFG.roleTargets,o.rt);Object.assign(PLANNED_SPEND,o.ps);Object.assign(PLANNED_TOTAL,o.pt);Object.assign(CFG.countryTargets,o.ct);Object.assign(CFG.targets,o.t);
+  CFG.plannedUpdated=o.pu;CFG.targetsUpdated=o.tu;
+}
+const targetFor=(c,m,role)=>{
+  const r=CFG.roleTargets[c]&&CFG.roleTargets[c][role]&&CFG.roleTargets[c][role][m];
+  if(isNum(r))return r;
+  const o=CFG.countryTargets[c];return(o&&isNum(o[m]))?o[m]:CFG.targets[m];
+};
+function percentile(arr,p){
+  const a=arr.slice().sort((x,y)=>x-y);if(!a.length)return null;
+  const pos=p*(a.length-1),lo=Math.floor(pos),hi=Math.ceil(pos);
+  return a[lo]+(a[hi]-a[lo])*(pos-lo);
+}
+function sumRange(arr,a,b){let s=0;for(let i=Math.max(a,0);i<=b;i++)s+=arr[i];return s;}
+
+/* =====================================================================
+   CORE CALCULATIONS  (spec §5)
+   ===================================================================== */
+const ADD=['nu7','nuPM','adPM','ltvMtd','ltv7','ltvPM','nuLMtd','adLMtd','adL7','adLPM','fpMtd','adMtd','revMtd','nuMtd','plan','planPro','fp7','ad7','fp14','ad14','adPrev7','fpProj','adProj','needed','adRem','runFP','ceilFP','nLeaf','nActive','nFallback'];
+
+function leafCompute(M,c,role,cx){
+  const P=CFG.params,s=M.ser[segIdx(c,role)],e=cx.e,ms=cx.ms;
+  const o={country:c,role,tgt0:targetFor(c,cx.m,role)};
+  o.fpMtd=sumRange(s.fp,ms,e);o.adMtd=sumRange(s.ad,ms,e);o.revMtd=sumRange(s.rev,ms,e);o.nuMtd=sumRange(s.nu,ms,e);
+  o.fp7=sumRange(s.fp,e-6,e);o.ad7=sumRange(s.ad,e-6,e);
+  o.fp14=sumRange(s.fp,e-13,e);o.ad14=sumRange(s.ad,e-13,e);
+  o.adPrev7=sumRange(s.ad,e-13,e-7);
+  o.nu7=sumRange(s.nu,e-6,e);o.ltvMtd=sumRange(s.ltv,ms,e);o.ltv7=sumRange(s.ltv,e-6,e);
+  const hl=s.hasLtv;o.nuLMtd=hl?o.nuMtd:0;o.adLMtd=hl?o.adMtd:0;o.adL7=hl?o.ad7:0;
+  if(cx.hasPM){o.adPM=sumRange(s.ad,cx.pmS,cx.pmE);o.nuPM=sumRange(s.nu,cx.pmS,cx.pmE);o.ltvPM=sumRange(s.ltv,cx.pmS,cx.pmE);o.adLPM=hl?o.adPM:0;}
+  else{o.adPM=0;o.nuPM=0;o.ltvPM=0;o.adLPM=0;}
+  o.plan=planOf(c,cx.m,role);o.planPro=o.plan*cx.pct;
+  // run-rate for the remaining spend
+  const win7ok=cx.dom>=P.minDays&&cx.hist7&&o.ad7>=P.adFloor,win14ok=cx.dom>=P.minDays&&cx.hist14&&o.ad14>=P.adFloor;
+  let run=null,src='MTD';
+  if(P.runWindow==='7d'&&win7ok){run=o.fp7/o.ad7;src='7d';}
+  else if(P.runWindow==='14d'&&win14ok){run=o.fp14/o.ad14;src='14d';}
+  else if(o.adMtd>0){run=o.fpMtd/o.adMtd;src='MTD';}
+  o.runLeaf=run;o.runSrc=src;
+  // achievable ceiling: P90 of weekly FPROAS over trailing weeks
+  const nW=P.ceilWeeks,wkFP=new Array(nW).fill(0),wkAD=new Array(nW).fill(0),rates=[];
+  for(let w=0;w<nW;w++){
+    const end=e-7*w,start=end-6;if(start<0)continue;
+    const f=sumRange(s.fp,start,end),a=sumRange(s.ad,start,end);
+    wkFP[nW-1-w]=f;wkAD[nW-1-w]=a;
+    if(a>=P.adFloor)rates.push(f/a);
+  }
+  o.wkFP=wkFP;o.wkAD=wkAD;o.validWeeks=rates.length;
+  let ceil=null,fallback=false;
+  if(run!=null){
+    if(rates.length>=P.ceilMinWeeks)ceil=Math.max(percentile(rates,P.ceilPct),run);
+    else{ceil=run*P.ceilStretch;fallback=true;}
+  }
+  o.ceilLeaf=ceil;o.ceilFallback=fallback;
+  // remaining budget & projection
+  const noPlan=o.plan<=0;
+  o.insufficient=!(o.adMtd>0)||run==null;
+  o.adRem=(cx.daysLeft>0&&!noPlan&&!o.insufficient)?Math.max(0,o.plan-o.adMtd):0;
+  o.runFP=o.adRem*(run||0);o.ceilFP=o.adRem*(ceil||0);
+  o.fpProj=o.fpMtd+o.runFP;o.adProj=o.adMtd+o.adRem;o.needed=o.tgt0*o.adProj;
+  o.nLeaf=1;o.nActive=o.adRem>0?1:0;o.nFallback=(o.adRem>0&&fallback)?1:0;
+  return derive(o,cx);
+}
+
+function sumNodes(list,cx){
+  const o={};
+  ADD.forEach(k=>{o[k]=0;});
+  const nW=CFG.params.ceilWeeks;o.wkFP=new Array(nW).fill(0);o.wkAD=new Array(nW).fill(0);
+  for(const n of list){
+    ADD.forEach(k=>{o[k]+=n[k]||0;});
+    for(let i=0;i<nW;i++){o.wkFP[i]+=n.wkFP[i];o.wkAD[i]+=n.wkAD[i];}
+  }
+  o.tgt0=o.adProj>0?o.needed/o.adProj:CFG.targets[cx.m];
+  o.country=list.length===1?list[0].country:null;
+  return derive(o,cx);
+}
+
+function derive(o,cx){
+  const P=CFG.params;
+  o.fproasMtd=ratio(o.fpMtd,o.adMtd);
+  o.win7ok=cx.dom>=P.minDays&&cx.hist7&&o.ad7>=P.adFloor;
+  o.win14ok=cx.dom>=P.minDays&&cx.hist14&&o.ad14>=P.adFloor;
+  o.fproas7=o.win7ok?o.fp7/o.ad7:null;
+  o.fproas14=o.win14ok?o.fp14/o.ad14:null;
+  o.target=o.adProj>0?o.needed/o.adProj:o.tgt0;
+  o.projEom=o.adProj>0?o.fpProj/o.adProj:null;
+  o.run=o.adRem>0?o.runFP/o.adRem:null;
+  o.ceil=o.adRem>0?o.ceilFP/o.adRem:null;
+  o.required=o.adRem>0?(o.needed-o.fpMtd)/o.adRem:null;
+  o.surplus=o.fpProj-o.needed;
+  o.lowConf=cx.dom<P.minDays||(o.adMtd>0&&o.adMtd<P.adFloor);
+  o.limited=o.nActive>0&&o.nFallback>=o.nActive;
+  o.cx=cx;
+  o.status=statusOf(o,cx);
+  // pacing (spec §5.6)
+  const pc=P.pace;
+  o.pacing=o.planPro>0?o.adMtd/o.planPro:null;
+  o.gap=o.plan>0?o.adMtd-o.planPro:null;
+  o.dailyBasis=(cx.dom>=CFG.params.minDays&&cx.hist7)?'last 7 days':'MTD average';
+  o.daily7=o.dailyBasis==='last 7 days'?o.ad7/7:(cx.dom>0?o.adMtd/cx.dom:0);
+  o.adProjRun=o.adMtd+o.daily7*cx.daysLeft;
+  o.projPacing=o.plan>0?o.adProjRun/o.plan:null;
+  o.dailyNeeded=(cx.daysLeft>0&&o.plan>0)?Math.max(0,(o.plan-o.adMtd)/cx.daysLeft):null;
+  o.growth7=(cx.dom>=P.minDays&&cx.hist14&&o.adPrev7>0)?(o.ad7-o.adPrev7)/o.adPrev7:null;
+  if(o.pacing==null){o.pcls='none';o.pcol='n';}
+  else{
+    o.pcls=o.pacing<pc.gLo?'under':(o.pacing>pc.gHi?'over':'on');
+    o.pcol=(o.pacing>=pc.gLo&&o.pacing<=pc.gHi)?'g':((o.pacing>=pc.aLo&&o.pacing<pc.gLo)||(o.pacing>pc.gHi&&o.pacing<=pc.aHi)?'a1':'r');
+  }
+  o.decision=decide(o);
+  // LTV / CAC (blended: all new premium users vs paid adspend)
+  o.cac=ratio(o.adMtd,o.nuMtd);o.cac7=o.win7ok?ratio(o.ad7,o.nu7):null;o.cacPM=cx.hasPM?ratio(o.adPM,o.nuPM):null;
+  o.ltvUser=ratio(o.ltvMtd,o.nuLMtd);o.ltvCac=ratio(o.ltvMtd,o.adLMtd);
+  o.ltvCac7=o.win7ok?ratio(o.ltv7,o.adL7):null;o.ltvCacPM=cx.hasPM?ratio(o.ltvPM,o.adLPM):null;
+  o.cacHeadroom=(o.ltvUser!=null&&o.cac!=null)?o.ltvUser/P.ltvGreen-o.cac:null;
+  o.ltvStatus=ltvStatusOf(o);
+  return o;
+}
+function ltvStatusOf(o){
+  const P=CFG.params,r=o.ltvCac;
+  if(r==null)return{cls:'n',label:'No LTV',tip:'No LTV entry for this market × user type, or no new premium users / adspend yet.'};
+  const cls=r>=P.ltvGreen?'g':(r>=P.ltvAmber?'a1':'r');
+  return{cls,label:r.toFixed(2)+'×',low:o.nuMtd<P.ltvMinUsers,tip:'LTV/CAC '+r.toFixed(2)+'×: 12M LTV acquired '+fmtEurFull(o.ltvMtd)+' ÷ adspend '+fmtEurFull(o.adLMtd)+'. Green ≥ '+P.ltvGreen+'×, amber ≥ '+P.ltvAmber+'×, red below.'};
+}
+
+function statusOf(o,cx){
+  const E=1e-9,T=o.target,P=CFG.params,pc=v=>fmtPct(v,1),runLbl=o.runSrc?o.runSrc+' ':'';
+  if(o.plan<=0&&!(o.adRem>0))return{key:'nobudget',cls:'n',label:'No budget',tip:'No planned budget for this country × user type this month, so FPROAS-to-target is not projected. Add it to the budget config (PLANNED_TOTAL / PLANNED_SPEND) in the file.'};
+  if(!(o.adMtd>0)&&!(o.adRem>0))return{key:'nodata',cls:'n',label:'No data',tip:'No adspend recorded this month for this segment: nothing to project.'};
+  if(!(o.adRem>0)){
+    const hit=o.fproasMtd!=null&&o.fproasMtd>=T-E;
+    return{key:hit?'hit':'missed',cls:hit?'g':'r',label:hit?'Hit':'Missed',
+      tip:(cx.daysLeft>0?'Month locked (planned budget fully deployed)':'Month ended')+': FPROAS '+pc(o.fproasMtd)+' vs target '+pc(T)+' → '+(hit?'Hit':'Missed')+'.'};
+  }
+  const need=fmtEurFull(o.adRem);
+  if(o.required<=E)return{key:'secured',cls:'g',label:'Secured',tip:'First payments already booked cover the target for the full planned spend (required FPROAS on the remaining '+need+' is ≤ 0).'};
+  if(o.projEom>=T-E)return{key:'ontrack',cls:'g',label:'On track',tip:'Projected EOM FPROAS '+pc(o.projEom)+' ≥ target '+pc(T)+'. Needs only '+pc(o.required)+' on the remaining '+need+' vs run-rate '+pc(o.run)+'.'};
+  const body='Needs '+pc(o.required)+' on the remaining '+need+' vs run-rate '+pc(o.run)+(o.runSrc?' ('+o.runSrc+')':'')+' and best-case '+pc(o.ceil)+(o.limited?' (fallback ceiling: limited history)':'')+' → ';
+  if(o.ceil!=null&&o.required<=o.ceil+E){
+    const light=o.required<=o.run*P.lightAmber+E;
+    return{key:light?'recover':'stretch',cls:light?'a1':'a2',label:light?'Recoverable':'Recoverable – stretch',tip:body+(light?'Recoverable (within 10% of run-rate).':'Recoverable only if performance returns near best-case (stretch).')};
+  }
+  return{key:'off',cls:'r',label:'Off track',tip:body+'Off track: even best-case performance on the remaining budget cannot reach target.'};
+}
+
+function decide(o){
+  const s=o.status.cls,p=o.pcls;
+  if(o.status.key==='nobudget'||p==='none')return{key:'nobudget',cls:'n',label:'No budget',detail:''};
+  if(s==='n')return{key:'nosignal',cls:'n',label:'No signal',detail:''};
+  const add=o.dailyNeeded!=null?Math.max(0,o.dailyNeeded-o.daily7):null;
+  const over=o.gap!=null?o.gap:null;
+  if(s==='g'){
+    if(p==='under')return{key:'inc',cls:'inc',label:'Increase',detail:add!=null&&add>0?'+'+fmtEur(add)+'/day to reach plan':'Room in plan'};
+    return{key:'hold',cls:'hold',label:'Hold / maintain',detail:''};
+  }
+  if(s==='a1'||s==='a2'){
+    if(p==='under')return{key:'cau',cls:'cau',label:'Increase cautiously',detail:add!=null&&add>0?'up to +'+fmtEur(add)+'/day; apply elasticity haircut':'Use simulator for haircut'};
+    return{key:'hold',cls:'hold',label:'Hold',detail:'Watch 7d trend'};
+  }
+  if(p==='under')return{key:'holdlow',cls:'hold',label:'Hold below plan',detail:'Do not chase budget'};
+  return{key:'red',cls:'red',label:'Reduce / reallocate',detail:(over!=null&&over>0?fmtEur(over)+' above pro-rata · ':'')+'shift to Green markets'};
+}
+
+/* ----- aggregation over the whole model ----- */
+const S={tab:'country',market:'all',country:null,sort:{},trackerView:'country',ltvView:'country',showAll:false,budgetMonth:null,model:null,R:null,files:{},demo:false,demoBudget:false,premAgg:null,adAgg:null};
+const inMarket=c=>S.market==='all'||(S.market==='new'?NEW_MARKETS.includes(c):!NEW_MARKETS.includes(c));
+
+function computeAll(){
+  const M=S.model;if(!M){S.R=null;return;}
+  const cx0=makeCtx(M,0),cx7=cx0.dom>=8?makeCtx(M,7):null,countries=[];
+  for(const c of VALID){
+    const active=[1,2].some(r=>M.active[segIdx(c,r)])||[1,2].some(r=>planOf(c,cx0.m,r)>0);
+    if(!active)continue;
+    const kids=[1,2].map(r=>({key:c+'|'+r,country:c,role:r,cur:leafCompute(M,c,r,cx0),prev:cx7?leafCompute(M,c,r,cx7):null}));
+    countries.push({country:c,key:c,kids,cur:sumNodes(kids.map(k=>k.cur),cx0),prev:cx7?sumNodes(kids.map(k=>k.prev),cx7):null});
+  }
+  S.R={cx0,cx7,countries};
+}
+/* Scope: a market is in the roll-ups only if it has a plan or adspend this month. Markets with first payments but
+   no spend/plan (e.g. CO, MX) are organic-only; counting their FP would inflate FPROAS (this reconciles to the 2025 tables). */
+const inScope=c=>c.cur.plan>0||c.cur.adMtd>0;
+const scopeCountries=()=>S.R?S.R.countries.filter(c=>inMarket(c.country)&&inScope(c)):[];
+const outOfScope=()=>S.R?S.R.countries.filter(c=>!inScope(c)):[];
+const visibleCountries=()=>S.R?S.R.countries.filter(c=>inMarket(c.country)&&(S.showAll||inScope(c))):[];
+const visibleLeaves=()=>visibleCountries().flatMap(c=>c.kids);
+const inScopeCode=code=>{const c=S.R&&S.R.countries.find(x=>x.country===code);return !!c&&inScope(c);};
+const scopeLeaves=()=>scopeCountries().flatMap(c=>c.kids);
+function globalNode(){
+  const R=S.R,vc=scopeCountries();
+  const cur=sumNodes(vc.flatMap(c=>c.kids.map(k=>k.cur)),R.cx0);cur.country=null;
+  const prev=R.cx7?sumNodes(vc.flatMap(c=>c.kids.map(k=>k.prev)),R.cx7):null;
+  return{cur,prev};
+}
+
+/* =====================================================================
+   DATA NOTES  (only the issues that can silently distort the numbers)
+   ===================================================================== */
+function dataNotes(){
+  const out=[],M=S.model,af=S.files.adspend;
+  if(!M)return out;
+  if(!af||af.st.missing.length)out.push('Adspend file not loaded: spend, pacing and FPROAS are not meaningful.');
+  else if(M.adLast!=null&&M.adLast<M.dataDate)out.push('Adspend data ends '+prettyDay(M.adLast)+', before the premium data date ('+prettyDay(M.dataDate)+'): MTD FPROAS is overstated. Re-export adspend.');
+  if(S.R.cx0.monthStartBeforeData)out.push('Data starts after the 1st of the month: MTD figures are partial.');
+  const sp=[];for(const c of S.R.countries)if(inScope(c))for(const k of c.kids)if(k.cur.adMtd>0&&k.cur.fpMtd<=0)sp.push(c.country+' '+ROLE[k.role]);
+  if(sp.length)out.push('Spend but zero first payments this month: '+sp.join(', ')+'.');
+  return out;
+}
+
+/* =====================================================================
+   RENDER HELPERS
+   ===================================================================== */
+const TIPS={
+  name:'Country (or country × user type). Click a country in Country Overview to filter the user-type, simulator and tracker tabs.',
+  status:'FPROAS status vs target potential, not a fixed cutoff.\nGreen: projected EOM ≥ target (or secured / hit).\nAmber: projected < target but the FPROAS required on the remaining spend ≤ achievable ceiling.\nRed: required > ceiling, or month locked and missed.\nGrey: no data / no budget.\nHover a chip for the plain-language numbers.',
+  fproasMtd:'FPROAS MTD = First Payments ÷ Adspend, 1st of month to data date (sum ÷ sum).',
+  fproas7:'Last 7 days: Σ First Payments ÷ Σ Adspend. N/A if fewer than the minimum days of month data, or window spend below the floor.',
+  target:'Monthly FPROAS target (global table, optional per-country override). Roll-ups: spend-weighted.',
+  projEom:'Projected EOM FPROAS = (FP MTD + remaining budget × run-rate FPROAS) ÷ (AdSpend MTD + remaining budget).',
+  required:'Required FPROAS on remaining spend = (Target × projected EOM spend − FP MTD) ÷ remaining budget. The FPROAS the rest of the month must deliver to land on target.',
+  ceil:'Achievable ceiling = 90th percentile of weekly FPROAS over the trailing 12 weeks (≥6 valid weeks, never below run-rate), else run-rate × stretch factor. Roll-ups: weighted by remaining budget.',
+  surplus:'FP shortfall / surplus = projected EOM FP − Target × projected EOM spend. Negative = shortfall in € of first payments.',
+  adMtd:'Adspend from the 1st of the month to the data date.',
+  planPro:'Pro-rata plan = full-month planned spend × % of month elapsed. Hover cells for the full-month plan.',
+  pacing:'Pacing = Adspend MTD ÷ planned spend to date (full-month plan × % of month elapsed). A look-back at what has been spent so far. Green 95–105%, amber 85–95% / 105–115%, red outside (editable). Labelled Under / On plan / Over.',
+  gap:'Spend gap € = Adspend MTD − pro-rata plan. Negative = underspent.',
+  margin:'Adspend margin MTD = Revenue MTD − Adspend MTD, where Revenue = First Payments + Returning + Recurring. Hover a value for the components.',
+  onpace:'Quick pace check, looking forward: projected month-end spend ÷ full-month plan, where projected = Adspend MTD + current daily spend × days left. Current daily spend = last-7-day average (MTD average during the first week). On pace = within the green band (95–105%), Behind below, Ahead above. The second line compares current daily spend with the daily spend needed to land exactly on plan.',
+  projPacing:'Projected pacing = (Adspend MTD + 7d daily run-rate × days left) ÷ full-month plan.',
+  daily:'Daily spend needed to land on plan = (full plan − Adspend MTD) ÷ days left (0 if plan already reached).',
+  growth:'7-day adspend growth = (last 7d − prior 7d) ÷ prior 7d. Needs ≥ minimum days of month data.',
+  decision:'Decision signal combining FPROAS status and pacing:\nGreen+Under → Increase · Green+On/Over → Hold\nAmber+Under → Increase cautiously · Amber+On/Over → Hold\nRed+Under → Hold below plan · Red+On/Over → Reduce / reallocate'
+};
+const fmtCac=v=>isNum(v)?'€'+v.toFixed(1):'–';
+const STATUS_RANK={n:-1,r:0,a2:1,a1:2,g:3};
+const statusRank=o=>STATUS_RANK[o.status.cls];
+
+function chip(o,inline){
+  let b='';
+  if(o.lowConf)b+='<span class="badge" data-tip="Low confidence: first week of the month, or very little spend. Projection relies on MTD.">low conf.</span>';
+  if(o.limited)b+='<span class="badge" data-tip="Limited data: fewer than '+CFG.params.ceilMinWeeks+' valid weeks of history, so the ceiling falls back to run-rate × '+CFG.params.ceilStretch+'.">limited data</span>';
+  const c='<span class="chip '+o.status.cls+'" data-tip="'+esc(o.status.tip)+'">'+esc(o.status.label)+'</span>';
+  if(!b)return c;
+  return inline?c+' '+b:'<span class="cw">'+c+'<span class="bdg">'+b+'</span></span>';
+}
+function wowArrow(cur,prev,what){
+  if(!isNum(cur)||!isNum(prev))return '';
+  const d=cur-prev;
+  const tip=what+' vs 7 days ago: '+fmtPct(prev)+' → '+fmtPct(cur)+' ('+fmtPP(d)+')';
+  if(Math.abs(d)<0.002)return '<span class="wow flat" data-tip="'+esc(tip)+'">▬</span>';
+  return '<span class="wow '+(d>0?'up':'dn')+'" data-tip="'+esc(tip)+'">'+(d>0?'▲':'▼')+' '+fmtPP(d)+'</span>';
+}
+function pacingChip(o,short){
+  if(o.pacing==null)return '<span class="chip n" data-tip="No planned budget for this month: pacing not defined.">No budget</span>';
+  const lbl=o.pcls==='under'?'Under':o.pcls==='over'?'Over':'On plan';
+  return '<span class="chip '+o.pcol+'" data-tip="'+esc('Adspend MTD '+fmtEurFull(o.adMtd)+' vs pro-rata plan '+fmtEurFull(o.planPro)+' → '+fmtPct(o.pacing,0)+' ('+lbl+')')+'">'+(short?lbl:fmtPct(o.pacing,0)+' · '+lbl)+'</span>';
+}
+function decisionCell(o){
+  const d=o.decision;
+  return '<span class="dec '+d.cls+'"><i class="dot"></i>'+esc(d.label)+'</span>'+(d.detail?'<div class="sub">'+esc(d.detail)+'</div>':'');
+}
+
+function paceChip(o){
+  if(o.projPacing==null)return '<span class="chip n" data-tip="No planned budget for this month.">No budget</span>';
+  const pc=CFG.params.pace,v=o.projPacing;
+  const cls=(v>=pc.gLo&&v<=pc.gHi)?'g':(((v>=pc.aLo&&v<pc.gLo)||(v>pc.gHi&&v<=pc.aHi))?'a1':'r');
+  const lbl=v<pc.gLo?'Behind':(v>pc.gHi?'Ahead':'On pace');
+  const tip='At '+fmtEurFull(o.daily7)+'/day ('+o.dailyBasis+') the month ends at '+fmtEurFull(o.adProjRun)+' = '+fmtPct(v,0)+' of the '+fmtEurFull(o.plan)+' plan.'+(o.dailyNeeded!=null?' Landing exactly on plan needs '+fmtEurFull(o.dailyNeeded)+'/day.':'');
+  return '<span class="chip '+cls+'" data-tip="'+esc(tip)+'">'+lbl+' · '+fmtPct(v,0)+'</span>';
+}
+function paceCell(o){
+  return paceChip(o)+(o.projPacing!=null&&o.dailyNeeded!=null?'<div class="sub" style="text-align:right">now '+fmtEur(o.daily7)+'/d · need '+fmtEur(o.dailyNeeded)+'/d</div>':'');
+}
+function perfCols(nameLabel,withWow){
+  return [
+    {id:'name',h:nameLabel,tip:TIPS.name,left:1,f:r=>esc(r.name)+(r.sub?' <span class="mute">'+esc(r.sub)+'</span>':''),v:r=>r.name},
+    {id:'status',h:'FPROAS status',tip:TIPS.status,w:170,f:r=>chip(r.n),v:r=>statusRank(r.n)},
+    {id:'fproasMtd',h:'FPROAS MTD',tip:TIPS.fproasMtd,f:r=>fmtPct(r.n.fproasMtd)+(withWow&&r.p?wowArrow(r.n.fproasMtd,r.p.fproasMtd,'FPROAS MTD'):''),v:r=>r.n.fproasMtd},
+    {id:'fproas7',h:'FPROAS 7d',tip:TIPS.fproas7,f:r=>r.n.fproas7!=null?fmtPct(r.n.fproas7):'<span class="mute" data-tip="N/A: fewer than '+CFG.params.minDays+' days of month data, or 7d spend below €'+CFG.params.adFloor+'.">N/A</span>',v:r=>r.n.fproas7},
+    {id:'target',h:'Target',tip:TIPS.target,f:r=>fmtPct(r.n.target),v:r=>r.n.target},
+    {id:'projEom',h:'Proj. EOM',tip:TIPS.projEom,f:r=>'<span class="t-'+r.n.status.cls+'">'+fmtPct(r.n.projEom)+'</span>'+(withWow&&r.p?wowArrow(r.n.projEom,r.p.projEom,'Projected EOM FPROAS'):''),v:r=>r.n.projEom},
+    {id:'required',h:'Required',tip:TIPS.required,f:r=>r.n.required!=null?fmtPct(r.n.required):'–',v:r=>r.n.required},
+    {id:'surplus',h:'FP vs target €',tip:TIPS.surplus,f:r=>'<span class="'+(r.n.surplus<0?'t-r':'t-g')+'">'+fmtEur(r.n.surplus,true)+'</span>',v:r=>r.n.surplus},
+    {id:'adMtd',h:'Adspend MTD',sep:1,tip:TIPS.adMtd,f:r=>fmtEur(r.n.adMtd),v:r=>r.n.adMtd},
+    {id:'margin',h:'Adspend margin MTD',tip:TIPS.margin,f:r=>{const m=r.n.revMtd-r.n.adMtd;return '<span class="'+(m<0?'t-r':'t-g')+'" data-tip="'+esc('Revenue MTD '+fmtEurFull(r.n.revMtd)+' − Adspend MTD '+fmtEurFull(r.n.adMtd)+' = '+fmtEurFull(m))+'">'+fmtEur(m,true)+'</span>';},v:r=>r.n.revMtd-r.n.adMtd},
+    {id:'planPro',h:'Plan (pro-rata)',tip:TIPS.planPro,f:r=>r.n.plan>0?'<span data-tip="Full-month plan '+fmtEurFull(r.n.plan)+'">'+fmtEur(r.n.planPro)+'</span>':'–',v:r=>r.n.planPro},
+    {id:'pacing',h:'Pacing',tip:TIPS.pacing,f:r=>pacingChip(r.n),v:r=>r.n.pacing},
+    {id:'gap',h:'Spend gap',tip:TIPS.gap,f:r=>r.n.gap!=null?fmtEur(r.n.gap,true):'–',v:r=>r.n.gap},
+    {id:'onpace',h:'On pace?',tip:TIPS.onpace,f:r=>paceCell(r.n),v:r=>r.n.projPacing},
+    {id:'growth',h:'7d spend Δ',tip:TIPS.growth,f:r=>r.n.growth7!=null?(r.n.growth7>=0?'+':'−')+Math.abs(r.n.growth7*100).toFixed(0)+'%':'<span class="mute">N/A</span>',v:r=>r.n.growth7},
+    {id:'decision',h:'Decision',tip:TIPS.decision,left:1,f:r=>decisionCell(r.n),v:r=>r.n.decision.label}
+  ];
+}
+
+function tableHTML(id,cols,rows,total,opts){
+  opts=opts||{};
+  const st=S.sort[id]||opts.defSort||null;
+  const list=rows.slice();
+  if(st){
+    const col=cols.find(c=>c.id===st.k);
+    if(col){
+      const dir=st.dir==='asc'?1:-1;
+      list.sort((a,b)=>{
+        const x=col.v(a),y=col.v(b),nx=x==null||(typeof x==='number'&&!isFinite(x)),ny=y==null||(typeof y==='number'&&!isFinite(y));
+        if(nx&&ny)return 0;if(nx)return 1;if(ny)return -1;
+        return(typeof x==='string'?x.localeCompare(y):x-y)*dir;
+      });
+    }
+  }
+  const head=cols.map(c=>{
+    const sorted=st&&st.k===c.id;
+    return '<th class="'+(c.left?'l':'')+(sorted?' sorted':'')+(c.nosort?' nosort':'')+(c.sep?' vsep':'')+'" '+(c.w?'style="min-width:'+c.w+'px" ':'')+(c.nosort?'':'data-sort="'+id+':'+c.id+'" ')+'data-tip="'+esc(c.tip||'')+'">'+esc(c.h)+(sorted?(st.dir==='asc'?' ▲':' ▼'):'')+'</th>';
+  }).join('');
+  const rowHTML=(r,cls)=>'<tr class="'+(cls||'')+(r.country&&r.country===S.country&&opts.clickable?' sel':'')+(opts.clickable&&!cls?' click':'')+'" '+(opts.clickable&&r.country&&!cls?'data-country="'+r.country+'"':'')+'>'+cols.map(c=>'<td class="'+(c.left?'l':'')+(c.sep?' vsep':'')+'">'+c.f(r)+'</td>').join('')+'</tr>';
+  return '<div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+(total?rowHTML(total,'total'):'')+list.map(r=>rowHTML(r)).join('')+'</tbody></table></div>';
+}
+
+function spark(wkFP,wkAD,target){
+  const vals=wkFP.map((f,i)=>wkAD[i]>=CFG.params.adFloor?f/wkAD[i]:null);
+  const nums=vals.filter(v=>v!=null);
+  if(nums.length<2)return '<span class="mute">–</span>';
+  const W=120,H=28,pd=3,all=nums.concat(isNum(target)?[target]:[]);
+  const lo=Math.min(...all),hi=Math.max(...all),span=(hi-lo)||1;
+  const X=i=>pd+i*(W-2*pd)/(vals.length-1),Y=v=>H-pd-((v-lo)/span)*(H-2*pd);
+  let pts='',last=null;
+  vals.forEach((v,i)=>{if(v!=null){pts+=(pts?' ':'')+X(i).toFixed(1)+','+Y(v).toFixed(1);last=[X(i),Y(v)];}});
+  const tl=isNum(target)?'<line x1="'+pd+'" x2="'+(W-pd)+'" y1="'+Y(target).toFixed(1)+'" y2="'+Y(target).toFixed(1)+'" stroke="currentColor" stroke-opacity=".45" stroke-dasharray="3 3"/>':'';
+  const tip='Weekly FPROAS, oldest → latest 7-day block ('+nums.map(v=>fmtPct(v,0)).join(', ')+'). Dashed = target.';
+  return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" data-tip="'+esc(tip)+'" style="color:var(--mute)">'+tl+'<polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="1.6"/><circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="2.5" fill="var(--accent)"/></svg>';
+}
+
+/* =====================================================================
+   RENDER: banner, toolbar, tabs, panels
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+function kpi(label,value,sub,cls,tip){return '<div class="kpi '+(cls||'')+'"'+(tip?' data-tip="'+esc(tip)+'"':'')+'><div class="l">'+esc(label)+'</div><div class="v">'+value+'</div><div class="s">'+sub+'</div></div>';}
+
+function renderBanner(){
+  const el=$('banner');
+  if(!S.R){el.innerHTML='<div class="card empty"><h2>Load data to start</h2>Upload <b>Premium User Data</b> and <b>Adspend Data</b> (CSV or XLSX) above, or use <b>Load demo data</b>.</div>';return;}
+  const g=globalNode(),n=g.cur,cx=S.R.cx0;
+  let h='';
+  if(cx.dom<CFG.params.minDays)h+='<div class="note">First week of the month: 7d metrics are N/A and projections use MTD (low confidence).</div>';
+  if(S.demo)h+='<div class="note info"><b>Demo mode:</b> synthetic data and placeholder budget. Upload real files to replace it.</div>';
+  else if(!hasBudget())h+='<div class="note err">No budget loaded: pacing and projected spend are unavailable. Add planned spend to the budget config at the top of the file.</div>';
+  dataNotes().forEach(t=>{h+='<div class="note">'+esc(t)+'</div>';});
+  const mk=S.market==='all'?'All markets':S.market==='new'?'New markets':'Existing markets';
+  h+='<div class="kpis">'+
+   kpi('FPROAS MTD · '+mk,fmtPct(n.fproasMtd),'7d: '+(n.fproas7!=null?fmtPct(n.fproas7):'N/A')+(g.prev?' · '+wowArrow(n.fproasMtd,g.prev.fproasMtd,'FPROAS MTD'):''),'',TIPS.fproasMtd)+
+   kpi('Target FPROAS',fmtPct(n.target),MONTHS[cx.m-1]+' '+cx.y,'',TIPS.target)+
+   kpi('Projected EOM FPROAS','<span class="t-'+n.status.cls+'">'+fmtPct(n.projEom)+'</span>',chip(n,true),n.status.cls,TIPS.projEom)+
+   kpi('Required on remaining spend',n.required!=null?fmtPct(n.required):'–','run-rate '+fmtPct(n.run)+' · best-case '+fmtPct(n.ceil),'',TIPS.required)+
+   kpi('FP vs target (EOM)','<span class="'+(n.surplus<0?'t-r':'t-g')+'">'+fmtEur(n.surplus,true)+'</span>','projected first payments surplus / shortfall','',TIPS.surplus)+
+   kpi('Adspend MTD',fmtEur(n.adMtd),'vs '+fmtEur(n.planPro)+' planned to date',n.plan>0?n.pcol:'',TIPS.adMtd)+
+   kpi('Adspend margin MTD','<span class="'+(n.revMtd-n.adMtd<0?'t-r':'t-g')+'">'+fmtEur(n.revMtd-n.adMtd,true)+'</span>','Revenue '+fmtEur(n.revMtd)+' − adspend '+fmtEur(n.adMtd)+(n.revMtd>0?' · '+fmtPct((n.revMtd-n.adMtd)/n.revMtd,0)+' of revenue':''),n.revMtd-n.adMtd<0?'r':'g',TIPS.margin)+
+   kpi('LTV / CAC (MTD)',n.ltvCac!=null?'<span class="t-'+n.ltvStatus.cls+'">'+n.ltvCac.toFixed(1)+'×</span>':'–','CAC '+fmtCac(n.cac)+' · LTV/user '+fmtCac(n.ltvUser),n.ltvStatus.cls,'LTV/CAC = 12-month LTV of the new premium users acquired MTD ÷ adspend MTD. CAC = adspend ÷ new premium users (blended). See the LTV / CAC tab.')+
+   kpi('Planned spend (full month)',fmtEur(n.plan),fmtEur(n.planPro)+' due by day '+cx.dom+' of '+cx.dim+' ('+Math.round(cx.pct*100)+'%)','',TIPS.planPro)+
+   kpi('Pacing so far',n.pacing!=null?fmtPct(n.pacing,1):'–',pacingChip(n,true)+' <span>MTD ÷ planned to date</span>',n.plan>0?n.pcol:'n',TIPS.pacing)+
+   kpi('Projected month-end spend',fmtEur(n.adProjRun),n.projPacing!=null?paceChip(n)+' <span>of '+fmtEur(n.plan)+' plan, at '+fmtEur(n.daily7)+'/day ('+n.dailyBasis+') × '+cx.daysLeft+' days left</span>':'no budget','',TIPS.onpace)+
+   kpi('Spend gap so far',n.gap!=null?fmtEur(n.gap,true):'–','Adspend MTD − planned to date','',TIPS.gap)+
+   '<div class="kpi" data-tip="Data through the latest date in the premium file."><div class="l">Month elapsed</div><div class="v">'+Math.round(cx.pct*100)+'%</div><div class="s">day '+cx.dom+'/'+cx.dim+' · '+cx.daysLeft+' days left<br>data through '+prettyDay(S.model.dataDate)+'</div><div class="bar"><i style="width:'+(cx.pct*100).toFixed(0)+'%"></i></div></div>'+
+   '</div>';
+  el.innerHTML=h;
+}
+function renderToolbar(){
+  const P=CFG.params;
+  $('toolbar').innerHTML=
+   '<span class="mute">Markets</span><span class="seg" id="seg-market">'+[['all','All'],['existing','Existing'],['new','New (FR GB IE PL PT RO)']].map(([k,l])=>'<button data-market="'+k+'" class="'+(S.market===k?'on':'')+'">'+l+'</button>').join('')+'</span>'+
+   '<span class="mute" data-tip="Run-rate FPROAS assumed for the remaining budget. Falls back to MTD when the window is not valid.">Run-rate</span><span class="seg">'+['7d','14d','MTD'].map(k=>'<button data-run="'+k+'" class="'+(P.runWindow===k?'on':'')+'">'+k+'</button>').join('')+'</span>'+
+ (S.R&&outOfScope().length?'<label class="mute" data-tip="Markets with first payments but no budget or adspend this month. They are never counted in the global roll-up."><input type="checkbox" id="chk-all"'+(S.showAll?' checked':'')+'> show '+outOfScope().length+' markets without budget/spend ('+outOfScope().map(c=>c.country).join(', ')+')</label>':'')+
+   (S.country?'<span class="chip b" style="cursor:pointer" data-clear-country="1" data-tip="Click to clear the country filter">Filter: '+S.country+' ✕</span>':'');
+}
+const TABS=[['country','Country Overview'],['user','By User Type'],['tracker','FPROAS Tracker'],['ltv','LTV / CAC']];
+function renderTabs(){$('tabs').innerHTML=TABS.map(([k,l])=>'<button data-tab="'+k+'" class="'+(S.tab===k?'on':'')+'">'+esc(l)+'</button>').join('');}
+
+const needData='<div class="card empty">Load data to see this view.</div>';
+function panelCountry(){
+  const g=globalNode();
+  const rows=visibleCountries().map(c=>({key:c.country,name:c.country,country:c.country,n:c.cur,p:c.prev,sub:NEW_MARKETS.includes(c.country)?'new':''}));
+  const total={name:'Global',n:g.cur,p:g.prev,sub:S.market==='all'?'':'('+S.market+')'};
+  return '<div class="mute" style="margin-bottom:6px;font-size:12px">Click a country to filter the other tabs. Click a header to sort. Hover any header or status chip for the calculation.</div>'+tableHTML('country',perfCols('Country',false),rows,total,{clickable:true});
+}
+function panelUser(){
+  let leaves=visibleLeaves();if(S.country)leaves=leaves.filter(k=>k.country===S.country);
+  const rows=leaves.map(k=>({key:k.key,name:k.country+' · '+ROLE[k.role],country:k.country,n:k.cur,p:k.prev}));
+  const sc=leaves.filter(k=>inScopeCode(k.country));
+  const n=sumNodes(sc.map(k=>k.cur),S.R.cx0);
+  const p=S.R.cx7?sumNodes(sc.map(k=>k.prev),S.R.cx7):null;
+  const total={name:S.country?S.country+' total':'Total',n,p};
+  const wowNote=S.R.cx7?'Arrows compare with the same metric as of 7 days earlier.':'Week-over-week arrows appear once the month is at least 8 days in.';
+  return '<div class="mute" style="margin-bottom:6px;font-size:12px">'+wowNote+'</div>'+tableHTML('user',perfCols('Country · User type',true),rows,total,{});
+}
+function panelTracker(){
+  const R=S.R,g=globalNode().cur,isC=S.trackerView==='country';
+  let list;
+  if(isC)list=visibleCountries().map(c=>({key:c.country,name:c.country,country:c.country,n:c.cur}));
+  else{let l=visibleLeaves();if(S.country)l=l.filter(k=>k.country===S.country);list=l.map(k=>({key:k.key,name:k.country+' · '+ROLE[k.role],country:k.country,n:k.cur}));}
+  const cols=[
+    {id:'name',h:isC?'Country':'Country · User type',tip:TIPS.name,left:1,f:r=>esc(r.name),v:r=>r.name},
+    {id:'fproasMtd',h:'FPROAS MTD',tip:TIPS.fproasMtd,f:r=>fmtPct(r.n.fproasMtd),v:r=>r.n.fproasMtd},
+    {id:'fproas7',h:'FPROAS 7d',tip:TIPS.fproas7,f:r=>r.n.fproas7!=null?fmtPct(r.n.fproas7):'<span class="mute">N/A</span>',v:r=>r.n.fproas7},
+    {id:'target',h:'Target',tip:TIPS.target,f:r=>fmtPct(r.n.target),v:r=>r.n.target},
+    {id:'gapT',h:'MTD vs target',tip:'FPROAS MTD − target, in percentage points.',f:r=>r.n.fproasMtd!=null&&r.n.target!=null?'<span class="'+(r.n.fproasMtd>=r.n.target?'t-g':'t-r')+'">'+fmtPP(r.n.fproasMtd-r.n.target)+'</span>':'–',v:r=>r.n.fproasMtd!=null&&r.n.target!=null?r.n.fproasMtd-r.n.target:null},
+    {id:'fpShare',h:'Share of global FP',tip:'First Payments MTD ÷ global First Payments MTD (visible markets).',f:r=>fmtPct(ratio(r.n.fpMtd,g.fpMtd)),v:r=>ratio(r.n.fpMtd,g.fpMtd)},
+    {id:'adShare',h:'Share of global spend',tip:'Adspend MTD ÷ global Adspend MTD (visible markets).',f:r=>fmtPct(ratio(r.n.adMtd,g.adMtd)),v:r=>ratio(r.n.adMtd,g.adMtd)},
+    {id:'growth',h:'7d spend Δ',tip:TIPS.growth,f:r=>r.n.growth7!=null?(r.n.growth7>=0?'+':'−')+Math.abs(r.n.growth7*100).toFixed(0)+'%':'<span class="mute">N/A</span>',v:r=>r.n.growth7},
+    {id:'trend',h:'Weekly trend (12w)',tip:'Weekly FPROAS (Σ FP ÷ Σ spend per 7-day block ending at the data date). Dashed line = target.',nosort:1,f:r=>spark(r.n.wkFP,r.n.wkAD,r.n.target),v:r=>0}
+  ];
+  const total={name:'Global',n:g};
+  return '<div class="seg" style="margin-bottom:8px"><button data-tview="country" class="'+(isC?'on':'')+'">By country</button><button data-tview="user" class="'+(!isC?'on':'')+'">By user type</button></div>'+tableHTML('tracker-'+S.trackerView,cols,list,total,{});
+}
+
+function ltvChip(o){
+  const st=o.ltvStatus;
+  const c='<span class="chip '+st.cls+'" data-tip="'+esc(st.tip)+'">'+esc(st.label)+'</span>';
+  if(!st.low)return c;
+  return '<span class="cw">'+c+'<span class="bdg"><span class="badge" data-tip="Fewer than '+CFG.params.ltvMinUsers+' new premium users so far: ratio is noisy.">low n</span></span></span>';
+}
+function deltaPct(cur,prev,lowerGood){
+  if(!isNum(cur)||!isNum(prev)||prev<=0)return '';
+  const d=cur/prev-1,good=lowerGood?d<0:d>0;
+  return ' <span class="'+(Math.abs(d)<0.02?'mute':good?'t-g':'t-r')+'" data-tip="vs last full month">'+(d>=0?'+':'−')+Math.abs(d*100).toFixed(0)+'%</span>';
+}
+function panelLTV(){
+  const P=CFG.params,g=globalNode().cur,isC=S.ltvView==='country',M=S.model;
+  let list;
+  if(isC)list=visibleCountries().map(c=>({key:c.country,name:c.country,country:c.country,n:c.cur}));
+  else{let l=visibleLeaves();if(S.country)l=l.filter(k=>k.country===S.country);list=l.map(k=>({key:k.key,name:k.country+' · '+ROLE[k.role],country:k.country,n:k.cur}));}
+  const x=v=>isNum(v)?v.toFixed(2)+'×':'–';
+  const cols=[
+    {id:'name',h:isC?'Country':'Country · User type',tip:TIPS.name,left:1,f:r=>esc(r.name),v:r=>r.name},
+    {id:'nu',h:'New premium users MTD',tip:'Total No. NEW Premium Users from the 1st of the month to the data date.',f:r=>nf0.format(r.n.nuMtd),v:r=>r.n.nuMtd},
+    {id:'ad',h:'Adspend MTD',tip:TIPS.adMtd,f:r=>fmtEur(r.n.adMtd),v:r=>r.n.adMtd},
+    {id:'cac',h:'CAC MTD',tip:'CAC = Adspend ÷ new premium users (blended: organic users are in the denominator).',f:r=>fmtCac(r.n.cac),v:r=>r.n.cac},
+    {id:'cac7',h:'CAC 7d',tip:'CAC over the last 7 days. N/A in the first week of the month or when spend is below the floor.',f:r=>r.n.cac7!=null?fmtCac(r.n.cac7):'<span class="mute">N/A</span>',v:r=>r.n.cac7},
+    {id:'cacPM',h:'CAC last month',tip:'CAC over the previous full calendar month, with the change of MTD CAC vs that month (green = cheaper).',f:r=>r.n.cacPM!=null?fmtCac(r.n.cacPM)+deltaPct(r.n.cac,r.n.cacPM,true):'<span class="mute">N/A</span>',v:r=>r.n.cacPM},
+    {id:'ltv',h:'LTV / user (12M)',tip:'12-month LTV per new premium user = Σ (new users × segment LTV) ÷ new users, i.e. mix-weighted by the users actually acquired.',f:r=>fmtCac(r.n.ltvUser),v:r=>r.n.ltvUser},
+    {id:'ratio',h:'LTV / CAC MTD',w:150,tip:'12M LTV acquired ÷ adspend. Green ≥ '+P.ltvGreen+'×, amber ≥ '+P.ltvAmber+'×, red below (editable). Hover a chip for the numbers.',f:r=>ltvChip(r.n),v:r=>r.n.ltvCac},
+    {id:'ratio7',h:'LTV / CAC 7d',tip:'Same ratio over the last 7 days.',f:r=>r.n.ltvCac7!=null?x(r.n.ltvCac7):'<span class="mute">N/A</span>',v:r=>r.n.ltvCac7},
+    {id:'ratioPM',h:'LTV / CAC last month',tip:'Same ratio over the previous full month.',f:r=>r.n.ltvCacPM!=null?x(r.n.ltvCacPM):'<span class="mute">N/A</span>',v:r=>r.n.ltvCacPM},
+    {id:'head',h:'CAC headroom @ '+P.ltvGreen+'×',tip:'LTV/user ÷ '+P.ltvGreen+' − CAC: how much more you could pay per new user and still hold the '+P.ltvGreen+'× ratio. Negative = above the CAC the target ratio allows.',f:r=>r.n.cacHeadroom!=null?'<span class="'+(r.n.cacHeadroom<0?'t-r':'t-g')+'">'+(r.n.cacHeadroom<0?'−':'+')+'€'+Math.abs(r.n.cacHeadroom).toFixed(1)+'</span>':'–',v:r=>r.n.cacHeadroom}
+  ];
+  const note='<div class="mute" style="margin-bottom:6px;font-size:12px">CAC = adspend ÷ new premium users in the month (blended). LTV = '+(M&&M.mixUsed?'new users × LTV by market × user type × PSP × duration':'new users × 12-month LTV by market × user type')+' (table '+esc(LTV.asOf||'custom')+'). LTV/CAC = 12M LTV acquired ÷ adspend.</div>';
+  return '<div class="seg" style="margin-bottom:8px"><button data-lview="country" class="'+(isC?'on':'')+'">By country</button><button data-lview="user" class="'+(!isC?'on':'')+'">By user type</button></div>'+note+tableHTML('ltv-'+S.ltvView,cols,list,{name:'Global',n:g},{});
+}
+
+function renderPanel(){
+  const t=S.tab,el=$('panel');
+  let h;
+  if(!S.R)h=needData;
+  else h=t==='country'?panelCountry():t==='user'?panelUser():t==='ltv'?panelLTV():panelTracker();
+  el.innerHTML=h;
+}
+function renderAll(){renderBanner();renderToolbar();renderTabs();renderPanel();}
+function recompute(){computeAll();}
+
+/* =====================================================================
+   LOADING FILES / DEMO
+   ===================================================================== */
+function setMsg(text,cls){$('msg').innerHTML=text?'<div class="note '+(cls||'')+'">'+esc(text)+'</div>':'';}
+function rebuild(){
+  const p=S.files.premium&&!S.files.premium.st.missing.length?{agg:S.premAgg,st:S.files.premium.st,mix:S.premMix}:null;
+  const a=S.files.adspend&&!S.files.adspend.st.missing.length?{agg:S.adAgg,st:S.files.adspend.st}:null;
+  S.model=buildModel(p,a);
+  recompute();
+  if(S.model&&!S.budgetMonth)S.budgetMonth=S.R.cx0.m;
+  if(S.model)S.budgetMonth=S.R.cx0.m;
+  renderAll();
+}
+function ingest(kind,table,name){
+  const res=kind==='premium'?processPremium(table):processAdspend(table);
+  S.files[kind]={name,st:res.st};
+  if(kind==='premium'){S.premAgg=res.agg;S.premMix=res.mix;}else S.adAgg=res.agg;
+  $(kind==='premium'?'fn-prem':'fn-ad').textContent=name+(res.st.missing.length?' (error)':'');
+  if(res.st.missing.length)setMsg(name+': missing required column(s): '+res.st.missing.join(', '),'err');
+  else setMsg('');
+}
+function parseLTVWorkbook(wb){
+  const find=pred=>{const n=wb.SheetNames.find(x=>pred(x.toLowerCase().trim()));return n?XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}).slice(1):null;};
+  const a=find(n=>n==='country x webrole'),b=find(n=>n.startsWith('country x webrole x psp x dur'));
+  if(!a)return null;
+  const out={asOf:'uploaded '+todayISO(),seg:{},combo:{}};
+  const role=v=>/^parent/i.test(v)?1:(/^sitter/i.test(v)?2:0);
+  const code=v=>NAME2CODE[v]||String(v).trim().toUpperCase();
+  a.forEach(r=>{const c=code(r[0]),rl=role(r[1]);if((c in VIDX)&&rl&&isFinite(+r[5])&&r[5]!=='')out.seg[c+'|'+rl]=[+r[2],+r[3],+r[4],+r[5]];});
+  if(b)b.forEach(r=>{const c=code(r[0]),rl=role(r[1]);if((c in VIDX)&&rl&&isFinite(+r[7])&&r[7]!=='')out.combo[c+'|'+rl+'|'+(pspIdx(r[2])*5+durIdx(r[3]))]=[+r[4],+r[7]];});
+  return Object.keys(out.seg).length?out:null;
+}
+async function handleLTV(file){
+  if(!file)return;
+  try{
+    if(typeof XLSX==='undefined'){setMsg('The XLSX parser (SheetJS) could not be loaded.','err');return;}
+    const out=parseLTVWorkbook(XLSX.read(await file.arrayBuffer(),{type:'array'}));
+    if(!out){setMsg(file.name+': no "Country x Webrole" sheet with LTV/user found.','err');return;}
+    LTV.asOf=out.asOf+' ('+file.name+')';LTV.seg=out.seg;LTV.combo=out.combo;
+    $('fn-ltv').textContent=file.name;setMsg('');
+    if(S.premAgg)rebuild();else renderAll();
+  }catch(err){setMsg('Could not read '+file.name+': '+err.message,'err');}
+}
+function dropDemoState(){
+  if(!S.demo)return;
+  S.demo=false;
+  if(S.demoBudget){restorePlan(S.planBackup);S.demoBudget=false;}
+  S.files={};S.premAgg=null;S.adAgg=null;
+}
+async function handleFile(kind,file){
+  if(!file)return;
+  dropDemoState();
+  try{
+    let rows;
+    if(/\.(csv|txt|tsv)$/i.test(file.name)){
+      rows=parseCSV(new TextDecoder('utf-8').decode(await file.arrayBuffer()));
+    }else{
+      if(typeof XLSX==='undefined'){setMsg('The XLSX parser (SheetJS) could not be loaded – check your connection or export the file as CSV.','err');return;}
+      const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+      let best=null;
+      for(const sn of wb.SheetNames){
+        const r=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,cellDates:true,defval:''});
+        if(r.slice(0,15).some(row=>row.some(c=>/country/i.test(String(c))))){best=r;break;}
+        if(!best)best=r;
+      }
+      rows=best||[];
+    }
+    ingest(kind,toTable(rows),file.name);
+    rebuild();
+  }catch(err){setMsg('Could not read '+file.name+': '+err.message,'err');}
+}
+
+/* ----- synthetic demo ----- */
+function genDemo(){
+  let seed=20261006;const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const now=new Date();let y=now.getFullYear(),m=now.getMonth()+1;
+  if(now.getDate()<=18){m--;if(m<1){m=12;y--;}}
+  const dataDate=dn(y,m,18),start=dataDate-95;
+  const scale={DE:4200,FR:3000,GB:3400,NL:1700,ES:1500,IT:1400,BE:900,CA:1900,BR:1200,MX:1000,CO:600,AR:500,DK:700,FI:500,NO:650,IE:450,PL:520,PT:420,RO:380,MY:300};
+  const newStart=dataDate-34;                      // new markets: only ~5 weeks of history
+  const premH=['country_lt','webrole id','psp','duration_months','calendar date','(€) First Payments','(€) Returning','(€) Recurring','Total No. NEW Premium Users'];
+  const adH=['country_lt','webrole id','Channel','Adspend','calendar date'];
+  const prem=[],adr=[];
+  VALID.forEach((c,ci)=>{
+    [1,2].forEach(role=>{
+      const base=scale[c]*(role===1?1:0.42),roas0=0.47+rnd()*0.24,slope=(rnd()-0.5)*0.004,ph=rnd()*6;
+      for(let d=start;d<=dataDate;d++){
+        if(NEW_MARKETS.includes(c)&&d<newStart)continue;
+        const dow=(d+4)%7;
+        const ad=base*(1+0.18*Math.sin(d/3.3+ph)+(rnd()-0.5)*0.2)*(dow>=5?0.85:1)*(1+(d-start)*0.0015);
+        const roas=Math.max(0.15,roas0*(1+(rnd()-0.5)*0.22)+slope*(d-start)*0.2);
+        const fp=ad*roas,o=fromDn(d);
+        const dstr=(ci%2?o.y+'-'+String(o.m).padStart(2,'0')+'-'+String(o.d).padStart(2,'0'):String(o.d).padStart(2,'0')+'/'+String(o.m).padStart(2,'0')+'/'+o.y);
+        adr.push([c,role,'Paid',ad.toFixed(2),dstr]);
+        [['Adyen',0.6],['PayPal',0.4]].forEach(([psp,w])=>[['1',0.5],['12',0.5]].forEach(([dur,w2])=>{
+          const f=fp*w*w2;prem.push([c,role,psp,dur,o.y+'-'+String(o.m).padStart(2,'0')+'-'+String(o.d).padStart(2,'0'),f.toFixed(2),(f*0.3).toFixed(2),(f*1.4).toFixed(2),Math.round(f/38)]);
+        }));
+      }
+    });
+  });
+  prem.push(['DN',1,'Adyen','1','2026-01-01','100','0','0','1'],['0','-','Adyen','1','2026-01-01','50','0','0','1'],['DE','-','Adyen','1',isoOf(dataDate),'20','0','0','0']);
+  adr.push(['DN',1,'Paid','999','2026-01-01'],['0','-','Paid','5','2026-01-01']);
+  Object.keys(PLANNED_SPEND).forEach(k=>delete PLANNED_SPEND[k]);
+  const dim=dimOf(y,m);
+  VALID.forEach(c=>{PLANNED_SPEND[c]=PLANNED_SPEND[c]||{};PLANNED_SPEND[c][m]=[Math.round(scale[c]*dim*(0.85+rnd()*0.3)/100)*100,Math.round(scale[c]*0.42*dim*(0.85+rnd()*0.3)/100)*100];});
+  return{prem:{headers:premH,rows:prem},ad:{headers:adH,rows:adr}};
+}
+function loadDemo(){
+  if(!S.demoBudget)S.planBackup=snapshotPlan();
+  S.demo=false;[PLANNED_SPEND,PLANNED_TOTAL,CFG.roleTargets,CFG.countryTargets].forEach(x=>Object.keys(x).forEach(k=>delete x[k]));Object.assign(CFG.targets,DEFAULT_TARGETS);
+  const d=genDemo();
+  ingest('premium',d.prem,'demo-premium.csv (synthetic)');
+  ingest('adspend',d.ad,'demo-adspend.csv (synthetic)');
+  S.demo=true;S.demoBudget=true;CFG.plannedUpdated=todayISO();
+  rebuild();
+}
+
+/* =====================================================================
+   QLIK AUTO-LOAD
+   ===================================================================== */
+async function loadQlikJSON(url){
+  const resp = await fetch(url, {cache:'reload'});
+  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return resp.json();
+}
+
+function applyQlikData(data){
+  dropDemoState();
+  ingest('premium', data.premiumData, 'Qlik – auto ('+data.generated.slice(0,10)+')');
+  ingest('adspend', data.adspendData, 'Qlik – auto ('+data.generated.slice(0,10)+')');
+  const status = $('qlik-status');
+  if(status) status.textContent = 'Last refreshed: '+(data.generated||'?').slice(0,19).replace('T',' ')+'Z';
+  rebuild();
+}
+
+async function autoLoadQlik(){
+  if(!QLIK_DATA_URL) return;
+  try {
+    const data = await loadQlikJSON(QLIK_DATA_URL);
+    applyQlikData(data);
+  } catch(e){
+    // silently skip if JSON file not found (file-based local use without a server)
+    if(!e.message.includes('Failed to fetch') && !e.message.includes('HTTP 404') && !e.message.includes('NetworkError')){
+      console.warn('Qlik auto-load:', e.message);
+    }
+  }
+}
+
+async function refreshFromQlik(){
+  const btn = $('btn-refresh');
+  const status = $('qlik-status');
+  if(!QLIK_REFRESH_API) return;
+  try {
+    if(btn){ btn.disabled=true; btn.textContent='⟳ Refreshing…'; }
+    if(status) status.textContent='Calling Qlik… (~2 min)';
+    const resp = await fetch(QLIK_REFRESH_API, {method:'POST'});
+    if(!resp.ok) throw new Error(`Refresh API returned HTTP ${resp.status}`);
+    if(status) status.textContent='Qlik pull complete — reloading data…';
+    // Wait a beat then reload the JSON
+    await new Promise(r=>setTimeout(r,2000));
+    const data = await loadQlikJSON(QLIK_DATA_URL);
+    applyQlikData(data);
+  } catch(e){
+    setMsg('Qlik refresh failed: '+e.message,'err');
+    if(status) status.textContent='Refresh failed.';
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='⟳ Refresh from Qlik'; }
+  }
+}
+
+/* =====================================================================
+   EVENTS
+   ===================================================================== */
+function initUI(){
+  $('f-prem').addEventListener('change',e=>handleFile('premium',e.target.files[0]));
+  $('f-ad').addEventListener('change',e=>handleFile('adspend',e.target.files[0]));
+  $('btn-demo').addEventListener('click',loadDemo);
+  // Qlik buttons
+  $('btn-qlik').addEventListener('click', async()=>{
+    const btn=$('btn-qlik');
+    btn.disabled=true; btn.textContent='↻ Loading…';
+    try{ await autoLoadQlik(); } catch(e){ setMsg('Load failed: '+e.message,'err'); }
+    finally{ btn.disabled=false; btn.textContent='↻ Load Qlik data'; }
+  });
+  if(QLIK_REFRESH_API){ const rb=$('btn-refresh'); if(rb)rb.style.display=''; }
+  $('btn-refresh').addEventListener('click',refreshFromQlik);
+  const tip=$('tip');
+  document.addEventListener('mouseover',e=>{const t=e.target.closest&&e.target.closest('[data-tip]');if(t&&t.dataset.tip){tip.textContent=t.dataset.tip;tip.style.display='block';}else tip.style.display='none';});
+  document.addEventListener('mousemove',e=>{
+    if(tip.style.display!=='block')return;
+    const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+16;
+    if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-12;
+    tip.style.left=Math.max(4,x)+'px';tip.style.top=Math.max(4,y)+'px';
+  });
+  document.addEventListener('click',e=>{
+    const t=e.target;
+    const tab=t.closest('[data-tab]');if(tab){S.tab=tab.dataset.tab;renderTabs();renderPanel();return;}
+    const mk=t.closest('[data-market]');if(mk){S.market=mk.dataset.market;renderAll();return;}
+    const rn=t.closest('[data-run]');if(rn){CFG.params.runWindow=rn.dataset.run;recompute();renderAll();return;}
+    if(t.closest('[data-clear-country]')){S.country=null;renderAll();return;}
+    const so=t.closest('[data-sort]');if(so){
+      const[id,k]=so.dataset.sort.split(':'),cur=S.sort[id];
+      S.sort[id]=cur&&cur.k===k?{k,dir:cur.dir==='asc'?'desc':'asc'}:{k,dir:'desc'};renderPanel();return;}
+    const tv=t.closest('[data-tview]');if(tv){S.trackerView=tv.dataset.tview;renderPanel();return;}
+    const row=t.closest('tr[data-country]');if(row&&S.tab==='country'){S.country=S.country===row.dataset.country?null:row.dataset.country;renderToolbar();renderPanel();return;}
+    const lv=t.closest('[data-lview]');if(lv){S.ltvView=lv.dataset.lview;renderPanel();return;}
+  });
+  document.addEventListener('change',e=>{
+    const t=e.target;let ds=t.dataset||{};
+    if(t.id==='chk-all'){S.showAll=t.checked;renderAll();return;}
+    if(t.id==='f-ltv'){handleLTV(t.files[0]);return;}
+  });
+}
+
+/* browser bootstrap (skipped when the script is run under Node for testing) */
+if(typeof document!=='undefined'&&document.getElementById){
+  applySeed();initUI();renderAll();
+  // Auto-load Qlik JSON on page load (no-op if the file isn't available)
+  autoLoadQlik();
+}
+if(typeof globalThis!=='undefined'){
+  globalThis.__DASH={LTV,PLANNED_TOTAL,ROLE_SPLIT,applySeed,dataNotes,scopeCountries,outOfScope,parseLTVWorkbook,pspIdx,durIdx,S,CFG,PLANNED_SPEND,VALID,NEW_MARKETS,parseCSV,toTable,processPremium,processAdspend,buildModel,makeCtx,computeAll,sumNodes,derive,leafCompute,globalNode,visibleCountries,visibleLeaves,parseDay,parseNum,perfCols,tableHTML,genDemo,fmtPct,fmtEur,percentile,planOf,targetFor,dn,fromDn,dimOf,ingest:null};
+}
+</script>
+</body>
+</html>
